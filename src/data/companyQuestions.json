@@ -1,0 +1,110 @@
+{
+  "google": {
+    "name": "Google",
+    "focus": "Algorithms, Data Structures, System Design, Scalability, and low-level performance analysis.",
+    "sampleQuestions": [
+      "Explain how a hash map handles collisions internally, and discuss the time complexity tradeoffs.",
+      "How would you design a distributed rate limiter for a global API servicing millions of requests per second?",
+      "Can you walk me through the differences between process-based and thread-based concurrency models?"
+    ]
+  },
+  "amazon": {
+    "name": "Amazon",
+    "focus": "Customer Obsession, Leadership Principles, Architectural Scalability, AWS cloud design patterns, and ownership.",
+    "sampleQuestions": [
+      "Describe a time when you had to make a quick decision without complete data. What was the impact?",
+      "How would you design a high-throughput shopping cart system that handles flash sale workloads on AWS?",
+      "What is your approach to handling service failure in microservice architectures? How do you ensure resilience?"
+    ]
+  },
+  "microsoft": {
+    "name": "Microsoft",
+    "focus": "OOP principles, systems programming, memory management, Azure integrations, and operating system basics.",
+    "sampleQuestions": [
+      "Explain the concept of memory leaks in managed versus unmanaged languages, and how to debug them.",
+      "How would you implement a thread-safe Singleton pattern in a modern programming language?",
+      "Design a real-time collaborative document editing system like Microsoft Office Online."
+    ]
+  },
+  "tcs": {
+    "name": "TCS",
+    "focus": "Core Java, DBMS/SQL Queries, SDLC models (Agile vs Waterfall), OOPs concepts, and software testing.",
+    "sampleQuestions": [
+      "What is polymorphism in Object-Oriented Programming, and what is the difference between overloading and overriding?",
+      "How would you write or explain a query to find the second highest salary from an Employee database table?",
+      "Explain the difference between Agile and Waterfall development life cycles."
+    ]
+  },
+  "infosys": {
+    "name": "Infosys",
+    "focus": "Web technologies, database fundamentals (Normalization, Indexing), REST APIs, and basic software testing.",
+    "sampleQuestions": [
+      "Explain the normalization process in relational databases up to Third Normal Form (3NF).",
+      "What are REST APIs? What are the key HTTP methods and response codes you would use?",
+      "What is the difference between black-box testing and white-box testing?"
+    ]
+  },
+  "zoho": {
+    "name": "Zoho",
+    "focus": "C/Java dry runs, custom recursion, pattern printing, custom array/string algorithms without using standard library functions, L2 Object-Oriented design (e.g. Call Taxi booking, Railway Reservation), and L3 System Design.",
+    "sampleQuestions": [
+      "Design a Call Taxi Booking System with linear points A-F, booking allocation based on nearest free taxi or lowest earnings in case of a tie, and details tracking.",
+      "Write a logic in Java/C to print a 2D matrix in spiral or zig-zag fashion, or checking if the version string comparison represents an upgrade or downgrade.",
+      "Explain how you would find the first occurrence of all characters of a second string in a first string, printing characters between the lowest and highest index.",
+      "How would you solve the MS-Paint Flood Fill algorithm to replace the color of a given pixel and all adjacent same-colored pixels?"
+    ]
+  },
+  "adobe": {
+    "name": "Adobe",
+    "focus": "Advanced data structures (trees, tries, graphs), low-level system performance, graphics/rendering optimizations, and Object-Oriented Design (OOD).",
+    "sampleQuestions": [
+      "Explain how you would optimize a polygon rendering algorithm to reduce memory usage during graphics processing.",
+      "How would you design a real-time collaborative whiteboarding tool that synchronizes updates across thousands of concurrent clients?",
+      "Explain the time and space complexity difference between using a Trie vs a HashMap for autocomplete search suggestions."
+    ]
+  },
+  "cisco": {
+    "name": "Cisco",
+    "focus": "TCP/IP networking stacks, protocol implementations, operating systems fundamentals (processes, memory management), concurrency, and C/C++ systems development.",
+    "sampleQuestions": [
+      "What is the difference between TCP and UDP at the socket level? Under what scenario would you write a custom application-layer protocol on UDP?",
+      "Explain how a router handles package header validation and checksum checks at wire speed.",
+      "What are the deadlock prevention techniques in operating systems, and how would you implement a lock-ordering system?"
+    ]
+  },
+  "paypal": {
+    "name": "PayPal",
+    "focus": "Transactional integrity (ACID), API rate limiting, distributed payment orchestration, and database concurrency controls.",
+    "sampleQuestions": [
+      "How would you ensure double-spend prevention in a highly concurrent distributed payments API under network partition?",
+      "What is your approach to handling multi-currency conversion transactions with strict decimal precision and roundoff compliance?",
+      "Design a token bucket rate limiter to protect payment processing APIs from sudden traffic spikes."
+    ]
+  },
+  "walmart": {
+    "name": "Walmart",
+    "focus": "E-commerce inventory scaling, order-fulfillment pipeline architectures, message brokers (Kafka), and cloud-native microservices.",
+    "sampleQuestions": [
+      "Design a real-time global stock-level tracker that updates product availability instantly across millions of store-front page views.",
+      "How do you structure event-driven messaging queues to guarantee order delivery while processing transactions asynchronously?",
+      "Explain how you would handle read-heavy caching strategies for product catalog search results during a peak flash sale."
+    ]
+  },
+  "accenture": {
+    "name": "Accenture",
+    "focus": "Enterprise integration patterns, REST/SOAP APIs, software development life cycle (SDLC) models, and client consulting situational readiness.",
+    "sampleQuestions": [
+      "Explain the difference between SOAP and REST web services, and how you would migrate a legacy SOAP service to REST.",
+      "How would you coordinate with client stakeholders to gather technical specifications for a large-scale database migration project?",
+      "What is the difference between functional, integration, and user acceptance testing (UAT) in enterprise delivery?"
+    ]
+  },
+  "general": {
+    "name": "General Mock",
+    "focus": "General computer science fundamentals, coding problem-solving, and communication skills.",
+    "sampleQuestions": [
+      "Tell me about a complex project you recently worked on. What were the technical challenges you faced?",
+      "What are your core strengths as a software developer, and how do you keep yourself updated with new tech?"
+    ]
+  }
+}

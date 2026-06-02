@@ -1,0 +1,1334 @@
+[
+  {
+    "id": "247",
+    "name": "247"
+  },
+  {
+    "id": "3dplm",
+    "name": "3dplm"
+  },
+  {
+    "id": "abco",
+    "name": "Abco"
+  },
+  {
+    "id": "accenture",
+    "name": "Accenture"
+  },
+  {
+    "id": "accolite",
+    "name": "Accolite"
+  },
+  {
+    "id": "adobe",
+    "name": "Adobe"
+  },
+  {
+    "id": "adp",
+    "name": "ADP"
+  },
+  {
+    "id": "akosha",
+    "name": "Akosha"
+  },
+  {
+    "id": "altranaricent",
+    "name": "Altran Aricent"
+  },
+  {
+    "id": "amadeus",
+    "name": "Amadeus"
+  },
+  {
+    "id": "amazon",
+    "name": "Amazon"
+  },
+  {
+    "id": "amdocs",
+    "name": "Amdocs"
+  },
+  {
+    "id": "american",
+    "name": "American Express"
+  },
+  {
+    "id": "android",
+    "name": "Android"
+  },
+  {
+    "id": "anmol",
+    "name": "Anmol"
+  },
+  {
+    "id": "aphonso",
+    "name": "Aphonso"
+  },
+  {
+    "id": "apt",
+    "name": "APT"
+  },
+  {
+    "id": "arcesium",
+    "name": "Arcesium"
+  },
+  {
+    "id": "argil",
+    "name": "Argil"
+  },
+  {
+    "id": "arista",
+    "name": "Arista Networks"
+  },
+  {
+    "id": "aristocrat",
+    "name": "Aristocrat"
+  },
+  {
+    "id": "ashok",
+    "name": "Ashok Leyland"
+  },
+  {
+    "id": "aspiring",
+    "name": "Aspiring Minds"
+  },
+  {
+    "id": "athena",
+    "name": "Athenahealth"
+  },
+  {
+    "id": "avaya",
+    "name": "Avaya"
+  },
+  {
+    "id": "aveva",
+    "name": "AVEVA"
+  },
+  {
+    "id": "axio",
+    "name": "Axio"
+  },
+  {
+    "id": "axtria",
+    "name": "Axtria"
+  },
+  {
+    "id": "azuga",
+    "name": "Azuga"
+  },
+  {
+    "id": "bankbazaar",
+    "name": "BankBazaar"
+  },
+  {
+    "id": "barc",
+    "name": "BARC"
+  },
+  {
+    "id": "barclays",
+    "name": "Barclays"
+  },
+  {
+    "id": "barracuda",
+    "name": "Barracuda Networks"
+  },
+  {
+    "id": "belzabar",
+    "name": "Belzabar Software"
+  },
+  {
+    "id": "bharat",
+    "name": "Bharat Electronics"
+  },
+  {
+    "id": "birst",
+    "name": "Birst"
+  },
+  {
+    "id": "blackrock",
+    "name": "BlackRock"
+  },
+  {
+    "id": "grofers",
+    "name": "Blinkit (Grofers)"
+  },
+  {
+    "id": "bloomberg",
+    "name": "Bloomberg"
+  },
+  {
+    "id": "bluestacks",
+    "name": "BlueStacks"
+  },
+  {
+    "id": "bridgei2i",
+    "name": "Bridgei2i"
+  },
+  {
+    "id": "british",
+    "name": "British Telecom"
+  },
+  {
+    "id": "cadence",
+    "name": "Cadence Design Systems"
+  },
+  {
+    "id": "calsoft",
+    "name": "Calsoft"
+  },
+  {
+    "id": "capegemini",
+    "name": "Capgemini"
+  },
+  {
+    "id": "capital",
+    "name": "Capital One"
+  },
+  {
+    "id": "carwale",
+    "name": "CarWale"
+  },
+  {
+    "id": "cavisson",
+    "name": "Cavisson Systems"
+  },
+  {
+    "id": "cerner",
+    "name": "Cerner"
+  },
+  {
+    "id": "cgi",
+    "name": "CGI"
+  },
+  {
+    "id": "chargebee",
+    "name": "Chargebee"
+  },
+  {
+    "id": "chegg",
+    "name": "Chegg"
+  },
+  {
+    "id": "cigital",
+    "name": "Cigital"
+  },
+  {
+    "id": "cisco",
+    "name": "Cisco"
+  },
+  {
+    "id": "citicorp",
+    "name": "Citicorp"
+  },
+  {
+    "id": "citius",
+    "name": "CitiusTech"
+  },
+  {
+    "id": "citrix",
+    "name": "Citrix"
+  },
+  {
+    "id": "clairvolex",
+    "name": "Clairvolex"
+  },
+  {
+    "id": "cleartrip",
+    "name": "Cleartrip"
+  },
+  {
+    "id": "click",
+    "name": "Click Labs"
+  },
+  {
+    "id": "cloud",
+    "name": "Cloudwick"
+  },
+  {
+    "id": "codenation",
+    "name": "CodeNation"
+  },
+  {
+    "id": "cognizant",
+    "name": "Cognizant (CTS)"
+  },
+  {
+    "id": "coivam",
+    "name": "Coivam"
+  },
+  {
+    "id": "commonfloor",
+    "name": "CommonFloor"
+  },
+  {
+    "id": "commvault",
+    "name": "Commvault"
+  },
+  {
+    "id": "compro",
+    "name": "Compro Technologies"
+  },
+  {
+    "id": "computer",
+    "name": "Computer Sciences Corporation"
+  },
+  {
+    "id": "connect",
+    "name": "Connectwise"
+  },
+  {
+    "id": "coupondunia",
+    "name": "CouponDunia"
+  },
+  {
+    "id": "cray",
+    "name": "Cray"
+  },
+  {
+    "id": "cuemath",
+    "name": "Cuemath"
+  },
+  {
+    "id": "customerxps",
+    "name": "CustomerXPs"
+  },
+  {
+    "id": "cvent",
+    "name": "Cvent"
+  },
+  {
+    "id": "dailyhunt",
+    "name": "Dailyhunt"
+  },
+  {
+    "id": "dbs",
+    "name": "DBS Bank"
+  },
+  {
+    "id": "delhivery",
+    "name": "Delhivery"
+  },
+  {
+    "id": "dell",
+    "name": "Dell"
+  },
+  {
+    "id": "deloitte",
+    "name": "Deloitte"
+  },
+  {
+    "id": "deutsche",
+    "name": "Deutsche Bank"
+  },
+  {
+    "id": "dolat",
+    "name": "Dolat Capital"
+  },
+  {
+    "id": "droom",
+    "name": "Droom"
+  },
+  {
+    "id": "druva",
+    "name": "Druva"
+  },
+  {
+    "id": "ebay",
+    "name": "eBay"
+  },
+  {
+    "id": "ecare",
+    "name": "eCare Technology"
+  },
+  {
+    "id": "eclinicalworks",
+    "name": "eClinicalWorks"
+  },
+  {
+    "id": "edifecs",
+    "name": "Edifecs"
+  },
+  {
+    "id": "efficiently",
+    "name": "Efficiently"
+  },
+  {
+    "id": "endurance",
+    "name": "Endurance International"
+  },
+  {
+    "id": "enquero",
+    "name": "Enquero"
+  },
+  {
+    "id": "envestnet",
+    "name": "Envestnet"
+  },
+  {
+    "id": "evive",
+    "name": "Evive Health"
+  },
+  {
+    "id": "exl",
+    "name": "EXL Service"
+  },
+  {
+    "id": "expand",
+    "name": "Expand My Business"
+  },
+  {
+    "id": "expedia",
+    "name": "Expedia"
+  },
+  {
+    "id": "eze",
+    "name": "Eze Software"
+  },
+  {
+    "id": "fab",
+    "name": "Fab.com"
+  },
+  {
+    "id": "factset",
+    "name": "FactSet"
+  },
+  {
+    "id": "fidelity",
+    "name": "Fidelity Investments"
+  },
+  {
+    "id": "financial",
+    "name": "Financial Software Systems"
+  },
+  {
+    "id": "finiq",
+    "name": "FinIQ"
+  },
+  {
+    "id": "flipkart",
+    "name": "Flipkart"
+  },
+  {
+    "id": "ford",
+    "name": "Ford Motor Company"
+  },
+  {
+    "id": "freecharge",
+    "name": "Freecharge"
+  },
+  {
+    "id": "genpact",
+    "name": "Genpact"
+  },
+  {
+    "id": "global",
+    "name": "GlobalLogic"
+  },
+  {
+    "id": "goibibo",
+    "name": "Goibibo"
+  },
+  {
+    "id": "goldman",
+    "name": "Goldman Sachs"
+  },
+  {
+    "id": "gs",
+    "name": "Goldman Sachs"
+  },
+  {
+    "id": "google",
+    "name": "Google"
+  },
+  {
+    "id": "gramener",
+    "name": "Gramener"
+  },
+  {
+    "id": "grey",
+    "name": "GreyOrange"
+  },
+  {
+    "id": "groupon",
+    "name": "Groupon"
+  },
+  {
+    "id": "gwynniebee",
+    "name": "Gwynnie Bee"
+  },
+  {
+    "id": "hackwithinfy",
+    "name": "HackWithInfy"
+  },
+  {
+    "id": "hashedin",
+    "name": "HashedIn"
+  },
+  {
+    "id": "hcl",
+    "name": "HCLTech"
+  },
+  {
+    "id": "hewlett",
+    "name": "Hewlett Packard Enterprise (HPE)"
+  },
+  {
+    "id": "hexaware",
+    "name": "Hexaware Technologies"
+  },
+  {
+    "id": "hike",
+    "name": "Hike Messenger"
+  },
+  {
+    "id": "hitachi",
+    "name": "Hitachi"
+  },
+  {
+    "id": "hitwicket",
+    "name": "Hitwicket"
+  },
+  {
+    "id": "homebell",
+    "name": "Homebell"
+  },
+  {
+    "id": "honeywell",
+    "name": "Honeywell"
+  },
+  {
+    "id": "hsbc",
+    "name": "HSBC"
+  },
+  {
+    "id": "huawei",
+    "name": "Huawei"
+  },
+  {
+    "id": "ibm",
+    "name": "IBM"
+  },
+  {
+    "id": "igniteworld",
+    "name": "Ignite World"
+  },
+  {
+    "id": "iit",
+    "name": "IIT Jobs"
+  },
+  {
+    "id": "inautix",
+    "name": "iNautix (BNY Mellon)"
+  },
+  {
+    "id": "indus",
+    "name": "Indus Valley Partners"
+  },
+  {
+    "id": "infybeam",
+    "name": "Infibeam"
+  },
+  {
+    "id": "infinera",
+    "name": "Infinera"
+  },
+  {
+    "id": "infoedge",
+    "name": "Info Edge (Naukri.com)"
+  },
+  {
+    "id": "informatica",
+    "name": "Informatica"
+  },
+  {
+    "id": "infozech",
+    "name": "Infozech"
+  },
+  {
+    "id": "inmobi",
+    "name": "InMobi"
+  },
+  {
+    "id": "innoviti",
+    "name": "Innoviti"
+  },
+  {
+    "id": "intel",
+    "name": "Intel"
+  },
+  {
+    "id": "intellect",
+    "name": "Intellect Design Arena"
+  },
+  {
+    "id": "interra",
+    "name": "Interra Information Technologies"
+  },
+  {
+    "id": "intuit",
+    "name": "Intuit"
+  },
+  {
+    "id": "itc",
+    "name": "ITC Infotech"
+  },
+  {
+    "id": "ittiam",
+    "name": "Ittiam Systems"
+  },
+  {
+    "id": "ivtl",
+    "name": "IVTL Infoview"
+  },
+  {
+    "id": "ixigo",
+    "name": "ixigo"
+  },
+  {
+    "id": "jabong",
+    "name": "Jabong"
+  },
+  {
+    "id": "jp",
+    "name": "JPMorgan Chase"
+  },
+  {
+    "id": "junglee",
+    "name": "Junglee Games"
+  },
+  {
+    "id": "juniper",
+    "name": "Juniper Networks"
+  },
+  {
+    "id": "kla",
+    "name": "KLA Corporation"
+  },
+  {
+    "id": "knowlarity",
+    "name": "Knowlarity"
+  },
+  {
+    "id": "kpit",
+    "name": "KPIT Technologies"
+  },
+  {
+    "id": "kronos",
+    "name": "Kronos Incorporated"
+  },
+  {
+    "id": "kuliza",
+    "name": "Kuliza Technologies"
+  },
+  {
+    "id": "latent",
+    "name": "LatentView Analytics"
+  },
+  {
+    "id": "leanovate",
+    "name": "Leanovate"
+  },
+  {
+    "id": "leftrightmindlrm",
+    "name": "Left Right Mind"
+  },
+  {
+    "id": "lendingkart",
+    "name": "Lendingkart"
+  },
+  {
+    "id": "lenskart",
+    "name": "Lenskart"
+  },
+  {
+    "id": "libsys",
+    "name": "LibSys"
+  },
+  {
+    "id": "linkedin",
+    "name": "LinkedIn"
+  },
+  {
+    "id": "lowes",
+    "name": "Lowe's"
+  },
+  {
+    "id": "fiberlink",
+    "name": "MaaS360 (Fiberlink)"
+  },
+  {
+    "id": "magic",
+    "name": "Magic Software"
+  },
+  {
+    "id": "magnitude",
+    "name": "Magnitude Software"
+  },
+  {
+    "id": "makemytrip",
+    "name": "MakeMyTrip"
+  },
+  {
+    "id": "maq",
+    "name": "MAQ Software"
+  },
+  {
+    "id": "maruti",
+    "name": "Maruti Suzuki"
+  },
+  {
+    "id": "matrix",
+    "name": "Matrix"
+  },
+  {
+    "id": "mcafee",
+    "name": "McAfee"
+  },
+  {
+    "id": "media",
+    "name": "Media.net"
+  },
+  {
+    "id": "median",
+    "name": "Median.co"
+  },
+  {
+    "id": "medlife",
+    "name": "Medlife"
+  },
+  {
+    "id": "meeami",
+    "name": "Meeami Technologies"
+  },
+  {
+    "id": "mentor",
+    "name": "Mentor Graphics"
+  },
+  {
+    "id": "microfocus",
+    "name": "Micro Focus"
+  },
+  {
+    "id": "microsoft",
+    "name": "Microsoft"
+  },
+  {
+    "id": "mindfire",
+    "name": "Mindfire Solutions"
+  },
+  {
+    "id": "mobicip",
+    "name": "Mobicip"
+  },
+  {
+    "id": "mobikwik",
+    "name": "MobiKwik"
+  },
+  {
+    "id": "monotype",
+    "name": "Monotype Imaging"
+  },
+  {
+    "id": "moonfrog",
+    "name": "Moonfrog Labs"
+  },
+  {
+    "id": "morgan",
+    "name": "Morgan Stanley"
+  },
+  {
+    "id": "motorola",
+    "name": "Motorola Mobility"
+  },
+  {
+    "id": "mphrx",
+    "name": "MphRx"
+  },
+  {
+    "id": "msupply",
+    "name": "mSupply"
+  },
+  {
+    "id": "myntra",
+    "name": "Myntra"
+  },
+  {
+    "id": "nagarrow",
+    "name": "Nagarro"
+  },
+  {
+    "id": "national",
+    "name": "National Instruments"
+  },
+  {
+    "id": "ni",
+    "name": "National Instruments"
+  },
+  {
+    "id": "nearbuy",
+    "name": "nearbuy"
+  },
+  {
+    "id": "netskope",
+    "name": "Netskope"
+  },
+  {
+    "id": "newgen",
+    "name": "Newgen Software"
+  },
+  {
+    "id": "nice",
+    "name": "NICE Systems"
+  },
+  {
+    "id": "nielit",
+    "name": "NIELIT"
+  },
+  {
+    "id": "nirvana",
+    "name": "Nirvana Solutions"
+  },
+  {
+    "id": "nokia",
+    "name": "Nokia"
+  },
+  {
+    "id": "nomura",
+    "name": "Nomura"
+  },
+  {
+    "id": "ntt",
+    "name": "NTT Data"
+  },
+  {
+    "id": "numerify",
+    "name": "Numerify"
+  },
+  {
+    "id": "nutanix",
+    "name": "Nutanix"
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA"
+  },
+  {
+    "id": "oku",
+    "name": "Okutec"
+  },
+  {
+    "id": "ola",
+    "name": "Ola Cabs"
+  },
+  {
+    "id": "olam",
+    "name": "Olam International"
+  },
+  {
+    "id": "opera",
+    "name": "Opera Software"
+  },
+  {
+    "id": "optum",
+    "name": "Optum (UHG)"
+  },
+  {
+    "id": "oracle",
+    "name": "Oracle"
+  },
+  {
+    "id": "orange",
+    "name": "Orange Business Services"
+  },
+  {
+    "id": "oyo",
+    "name": "OYO Rooms"
+  },
+  {
+    "id": "ps",
+    "name": "P.S. Solutions"
+  },
+  {
+    "id": "palantir",
+    "name": "Palantir Technologies"
+  },
+  {
+    "id": "paxcel",
+    "name": "Paxcel Technologies"
+  },
+  {
+    "id": "paypal",
+    "name": "PayPal"
+  },
+  {
+    "id": "paytm",
+    "name": "Paytm"
+  },
+  {
+    "id": "payu",
+    "name": "PayU"
+  },
+  {
+    "id": "persistent",
+    "name": "Persistent Systems"
+  },
+  {
+    "id": "philips",
+    "name": "Philips"
+  },
+  {
+    "id": "pnb",
+    "name": "PNB MetLife"
+  },
+  {
+    "id": "power2sme",
+    "name": "Power2SME"
+  },
+  {
+    "id": "practo",
+    "name": "Practo"
+  },
+  {
+    "id": "print",
+    "name": "Print"
+  },
+  {
+    "id": "promact",
+    "name": "Promact"
+  },
+  {
+    "id": "proptiger",
+    "name": "PropTiger"
+  },
+  {
+    "id": "sapient",
+    "name": "Publicis Sapient"
+  },
+  {
+    "id": "pubmatic",
+    "name": "PubMatic"
+  },
+  {
+    "id": "pwc",
+    "name": "PwC"
+  },
+  {
+    "id": "qualcomm",
+    "name": "Qualcomm"
+  },
+  {
+    "id": "quantiphi",
+    "name": "Quantiphi"
+  },
+  {
+    "id": "qubole",
+    "name": "Qubole"
+  },
+  {
+    "id": "quikr",
+    "name": "Quikr"
+  },
+  {
+    "id": "raja",
+    "name": "Raja Software Labs"
+  },
+  {
+    "id": "razorpay",
+    "name": "Razorpay"
+  },
+  {
+    "id": "redbus",
+    "name": "redBus"
+  },
+  {
+    "id": "redpine",
+    "name": "Redpine Signals"
+  },
+  {
+    "id": "reliance",
+    "name": "Reliance Jio"
+  },
+  {
+    "id": "reve",
+    "name": "REVE Systems"
+  },
+  {
+    "id": "riverbed",
+    "name": "Riverbed Technology"
+  },
+  {
+    "id": "rivigo",
+    "name": "Rivigo"
+  },
+  {
+    "id": "robert",
+    "name": "Robert Bosch"
+  },
+  {
+    "id": "rockwell",
+    "name": "Rockwell Automation"
+  },
+  {
+    "id": "sabre",
+    "name": "Sabre Corporation"
+  },
+  {
+    "id": "salesforce",
+    "name": "Salesforce"
+  },
+  {
+    "id": "samsung",
+    "name": "Samsung"
+  },
+  {
+    "id": "sap",
+    "name": "SAP"
+  },
+  {
+    "id": "scalegrid",
+    "name": "ScaleGrid"
+  },
+  {
+    "id": "schlumberger",
+    "name": "Schlumberger"
+  },
+  {
+    "id": "scientific",
+    "name": "Scientific Games"
+  },
+  {
+    "id": "shell",
+    "name": "Shell"
+  },
+  {
+    "id": "shopclues",
+    "name": "Shopclues"
+  },
+  {
+    "id": "shreepartners",
+    "name": "Shreepartners"
+  },
+  {
+    "id": "siemens",
+    "name": "Siemens"
+  },
+  {
+    "id": "sigmoid",
+    "name": "Sigmoid"
+  },
+  {
+    "id": "sigtuple",
+    "name": "SigTuple"
+  },
+  {
+    "id": "sling",
+    "name": "Sling Media"
+  },
+  {
+    "id": "smartprix",
+    "name": "Smartprix"
+  },
+  {
+    "id": "snapdeal",
+    "name": "Snapdeal"
+  },
+  {
+    "id": "societe",
+    "name": "Societe Generale"
+  },
+  {
+    "id": "sonetel",
+    "name": "Sonetel"
+  },
+  {
+    "id": "sonus",
+    "name": "Sonus Networks"
+  },
+  {
+    "id": "sophos",
+    "name": "Sophos"
+  },
+  {
+    "id": "sopra",
+    "name": "Sopra Steria"
+  },
+  {
+    "id": "sprinklr",
+    "name": "Sprinklr"
+  },
+  {
+    "id": "st",
+    "name": "St"
+  },
+  {
+    "id": "stack",
+    "name": "Stack Overflow"
+  },
+  {
+    "id": "sbi",
+    "name": "State Bank of India"
+  },
+  {
+    "id": "stayzilla",
+    "name": "Stayzilla"
+  },
+  {
+    "id": "streamoid",
+    "name": "Streamoid Technologies"
+  },
+  {
+    "id": "subex",
+    "name": "Subex"
+  },
+  {
+    "id": "sumo",
+    "name": "Sumo Logic"
+  },
+  {
+    "id": "surya",
+    "name": "Surya Software Systems"
+  },
+  {
+    "id": "swiggy",
+    "name": "Swiggy"
+  },
+  {
+    "id": "symantec",
+    "name": "Symantec"
+  },
+  {
+    "id": "synopsys",
+    "name": "Synopsys"
+  },
+  {
+    "id": "talend",
+    "name": "Talend"
+  },
+  {
+    "id": "target",
+    "name": "Target"
+  },
+  {
+    "id": "tata",
+    "name": "Tata Communications"
+  },
+  {
+    "id": "tcs",
+    "name": "TCS"
+  },
+  {
+    "id": "mahindra",
+    "name": "Tech Mahindra"
+  },
+  {
+    "id": "tejas",
+    "name": "Tejas Networks"
+  },
+  {
+    "id": "telephonic",
+    "name": "Telephonic"
+  },
+  {
+    "id": "telstra",
+    "name": "Telstra"
+  },
+  {
+    "id": "teradata",
+    "name": "Teradata"
+  },
+  {
+    "id": "tesco",
+    "name": "Tesco"
+  },
+  {
+    "id": "thinktankers",
+    "name": "ThinkTankers"
+  },
+  {
+    "id": "thorogood",
+    "name": "Thorogood Associates"
+  },
+  {
+    "id": "tinyowl",
+    "name": "TinyOwl"
+  },
+  {
+    "id": "tismo",
+    "name": "Tismo Technology"
+  },
+  {
+    "id": "tivo",
+    "name": "TiVo"
+  },
+  {
+    "id": "tomtom",
+    "name": "TomTom"
+  },
+  {
+    "id": "toptalent",
+    "name": "TopTalent"
+  },
+  {
+    "id": "tower",
+    "name": "Tower Research Capital"
+  },
+  {
+    "id": "tracxn",
+    "name": "Tracxn"
+  },
+  {
+    "id": "transbit",
+    "name": "Transbit Technologies"
+  },
+  {
+    "id": "treebo",
+    "name": "Treebo Hotels"
+  },
+  {
+    "id": "tricon",
+    "name": "Tricon Infotech"
+  },
+  {
+    "id": "twitter",
+    "name": "Twitter"
+  },
+  {
+    "id": "u2opia",
+    "name": "U2opia Mobile"
+  },
+  {
+    "id": "uber",
+    "name": "Uber"
+  },
+  {
+    "id": "ubs",
+    "name": "UBS"
+  },
+  {
+    "id": "union",
+    "name": "Union Bank"
+  },
+  {
+    "id": "unisys",
+    "name": "Unisys"
+  },
+  {
+    "id": "uhg",
+    "name": "UnitedHealth Group (UHG)"
+  },
+  {
+    "id": "urbanclap",
+    "name": "Urban Company (UrbanClap)"
+  },
+  {
+    "id": "uurmi",
+    "name": "Uurmi Systems"
+  },
+  {
+    "id": "verifone",
+    "name": "Verifone"
+  },
+  {
+    "id": "veritas",
+    "name": "Veritas Technologies"
+  },
+  {
+    "id": "virtusapolaris",
+    "name": "VirtusaPolaris"
+  },
+  {
+    "id": "visa",
+    "name": "Visa"
+  },
+  {
+    "id": "visible",
+    "name": "Visible Alpha"
+  },
+  {
+    "id": "vizury",
+    "name": "Vizury"
+  },
+  {
+    "id": "vmware",
+    "name": "VMware"
+  },
+  {
+    "id": "volante",
+    "name": "Volante Technologies"
+  },
+  {
+    "id": "walmart",
+    "name": "Walmart"
+  },
+  {
+    "id": "wd",
+    "name": "Western Digital"
+  },
+  {
+    "id": "whishworks",
+    "name": "WHISHWORKS"
+  },
+  {
+    "id": "enstage",
+    "name": "Wibmo (Enstage)"
+  },
+  {
+    "id": "wingify",
+    "name": "Wingify"
+  },
+  {
+    "id": "wipro",
+    "name": "Wipro"
+  },
+  {
+    "id": "wissen",
+    "name": "Wissen Technology"
+  },
+  {
+    "id": "wizecommerce",
+    "name": "Wize Commerce"
+  },
+  {
+    "id": "wooqer",
+    "name": "Wooqer"
+  },
+  {
+    "id": "xoriant",
+    "name": "Xoriant"
+  },
+  {
+    "id": "yatra",
+    "name": "Yatra.com"
+  },
+  {
+    "id": "zebra",
+    "name": "Zebra Technologies"
+  },
+  {
+    "id": "zillious",
+    "name": "Zillious Solutions"
+  },
+  {
+    "id": "zoho",
+    "name": "Zoho"
+  },
+  {
+    "id": "zoomrx",
+    "name": "ZoomRx"
+  },
+  {
+    "id": "zopper",
+    "name": "Zopper"
+  },
+  {
+    "id": "zs",
+    "name": "ZS Associates"
+  },
+  {
+    "id": "zycus",
+    "name": "Zycus"
+  },
+  {
+    "id": "zynga",
+    "name": "Zynga"
+  }
+]
