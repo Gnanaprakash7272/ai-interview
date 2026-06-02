@@ -329,6 +329,11 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
 
   // Start Speech Recognition dictation
   function startRecording() {
+    if (!stream) {
+      alert("Camera and Microphone access are compulsory to proceed with the interview.");
+      return;
+    }
+
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.");
       return;
@@ -746,12 +751,11 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
 
           <div className="video-controls-row">
             <button 
-              onClick={() => setVideoEnabled(!videoEnabled)}
-              className={`btn btn-control ${videoEnabled ? "btn-active" : "btn-disabled"}`}
-              title={videoEnabled ? "Disable Webcam" : "Enable Webcam"}
+              className="btn btn-control btn-active"
+              title="Webcam is required"
             >
-              {videoEnabled ? <Video size={16} /> : <VideoOff size={16} />}
-              <span>Webcam</span>
+              <Video size={16} />
+              <span>Webcam (Compulsory)</span>
             </button>
 
             <button 
