@@ -13,11 +13,6 @@ export default async function Home() {
 
       {/* Hero Section */}
       <section className="hero container animate-fade-in">
-        <div className="hero-badge">
-          <Terminal size={14} className="badge-icon" />
-          <span>Powered by Gemini 2.5 Pro Architecture</span>
-        </div>
-        
         <h1 className="hero-title">
           Master Technical Interviews <br />
           With <span className="text-gradient">Real-Time AI Guidance</span>
