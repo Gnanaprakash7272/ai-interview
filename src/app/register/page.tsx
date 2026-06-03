@@ -5,12 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Mail, Lock, User, Loader2, ArrowRight } from "lucide-react";
+import { Mail, Lock, User, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import LogoImage from "@/assets/logo.png";
 
 export default function Register() {
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -71,7 +72,6 @@ export default function Register() {
                 id="name"
                 type="text"
                 className="form-input text-input"
-                placeholder="John Doe"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
@@ -87,7 +87,6 @@ export default function Register() {
                 id="email"
                 type="email"
                 className="form-input text-input"
-                placeholder="you@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -101,13 +100,21 @@ export default function Register() {
               <Lock size={18} className="input-icon" />
               <input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 className="form-input text-input"
-                placeholder="••••••••"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
+              {formData.password && (
+                <button 
+                  type="button" 
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              )}
             </div>
           </div>
 
@@ -223,22 +230,47 @@ export default function Register() {
           position: relative;
           display: flex;
           align-items: center;
+          width: 100%;
         }
 
         .input-icon {
           position: absolute;
           left: 14px;
-          color: var(--text-dark);
+          color: var(--text-muted);
           pointer-events: none;
           transition: color 0.2s ease;
+          z-index: 2;
         }
 
         .text-input {
           padding-left: 44px !important;
+          padding-right: 44px !important;
           width: 100%;
+          position: relative;
+          z-index: 1;
         }
 
-        .form-input:focus + .input-icon {
+        .text-input:focus + .input-icon, 
+        .input-with-icon:focus-within .input-icon {
+          color: var(--primary);
+        }
+        
+        .password-toggle {
+          position: absolute;
+          right: 14px;
+          background: none;
+          border: none;
+          color: var(--text-muted);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          z-index: 2;
+          transition: color 0.2s;
+        }
+        
+        .password-toggle:hover {
           color: var(--primary);
         }
 
