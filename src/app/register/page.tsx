@@ -50,7 +50,7 @@ export default function Register() {
       
       <div className="auth-card glass-card">
         <div className="auth-header">
-          <Image src="/mockora-logo.png" alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
+          <img src="/mockora-logo.png" alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
           <h1>Create Account</h1>
           <p>Begin your AI-powered interview prep today</p>
         </div>

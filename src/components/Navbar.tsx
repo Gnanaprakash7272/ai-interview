@@ -27,7 +27,7 @@ export default function Navbar() {
     <nav className="glass-navbar">
       <div className="container flex-between nav-container">
         <Link href="/" className="logo-container">
-          <Image src="/mockora-logo.png" alt="Mockora.ai Logo" width={48} height={48} className="logo-image" />
+          <img src="/mockora-logo.png" alt="Mockora.ai Logo" width={48} height={48} className="logo-image" />
           <span className="logo-text">Mockora<span className="logo-highlight">.ai</span></span>
         </Link>
 
