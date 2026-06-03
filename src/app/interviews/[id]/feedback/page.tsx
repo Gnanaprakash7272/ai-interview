@@ -500,28 +500,47 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
                       </div>
                     </div>
 
-                    {/* ─── Answer Comparison Grid (3 columns) ─── */}
-                    <div className="audit-answers-grid-3">
-                      <div className="answer-box user-answer">
-                        <h4>Your Answer</h4>
-                        <p>{resDoc.answer || <em className="text-dark">No response recorded.</em>}</p>
+                    {/* ─── Realistic Chat Transcript ─── */}
+                    <div className="chat-transcript-container">
+                      
+                      {/* Recruiter Question Bubble */}
+                      <div className="chat-bubble recruiter-bubble">
+                        <div className="bubble-header">
+                          <Bot size={14} />
+                          <span>AI Recruiter</span>
+                        </div>
+                        <div className="bubble-body">
+                          {resDoc.question}
+                        </div>
                       </div>
 
-                      <div className="answer-box expected-answer">
-                        <div className="ideal-title-row">
-                          <FileCheck size={16} className="info-color" />
-                          <h4>Expected Answer</h4>
+                      {/* Candidate Answer Bubble */}
+                      <div className="chat-bubble candidate-bubble">
+                        <div className="bubble-header">
+                          <User size={14} />
+                          <span>You (Candidate)</span>
                         </div>
-                        <p>{resDoc.expectedAnswer || "A strong answer would clearly define the concept, explain its implementation, and discuss trade-offs with a real-world example."}</p>
+                        <div className="bubble-body">
+                          {resDoc.answer || <em style={{ opacity: 0.6 }}>No verbal response recorded.</em>}
+                        </div>
                       </div>
 
-                      <div className="answer-box ideal-answer">
-                        <div className="ideal-title-row">
-                          <MessageSquareCode size={16} className="primary-color" />
-                          <h4>AI Improved Answer</h4>
+                      {/* AI Direct Coaching Feedback Bubble */}
+                      <div className="chat-bubble coach-bubble">
+                        <div className="bubble-header">
+                          <MessageSquareCode size={14} />
+                          <span>Direct AI Coaching</span>
                         </div>
-                        <p>{resDoc.improvedAnswer}</p>
+                        <div className="bubble-body">
+                          {resDoc.improvedAnswer}
+                        </div>
+                        {resDoc.expectedAnswer && (
+                          <div className="ideal-reference">
+                            <strong>Expert Reference:</strong> {resDoc.expectedAnswer}
+                          </div>
+                        )}
                       </div>
+
                     </div>
 
                     {/* Analysis Grid: Strengths + Weaknesses + Suggestions */}
@@ -1290,7 +1309,67 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           line-height: 1.4;
         }
 
-        .missing-concepts-panel {
+          .chat-transcript-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+          }
+          .chat-bubble {
+            max-width: 85%;
+            padding: 16px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          }
+          .bubble-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            opacity: 0.9;
+          }
+          .bubble-body {
+            font-size: 15px;
+            line-height: 1.6;
+          }
+          .recruiter-bubble {
+            align-self: flex-start;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-bottom-left-radius: 4px;
+          }
+          .recruiter-bubble .bubble-header { color: #c4b5fd; }
+          .candidate-bubble {
+            align-self: flex-end;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-bottom-right-radius: 4px;
+          }
+          .candidate-bubble .bubble-header { color: #93c5fd; }
+          .coach-bubble {
+            align-self: center;
+            width: 100%;
+            max-width: 100%;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px dashed rgba(16, 185, 129, 0.4);
+            margin-top: 8px;
+          }
+          .coach-bubble .bubble-header { color: #6ee7b7; }
+          .ideal-reference {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            color: var(--text-muted);
+          }
+          .ideal-reference strong { color: var(--text-main); }.missing-concepts-panel {
           padding: 14px;
           border: 1px dashed var(--border);
           border-radius: var(--radius-md);
