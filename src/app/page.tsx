@@ -15,7 +15,7 @@ export default async function Home() {
       <section className="hero container animate-fade-in">
         <div className="hero-badge">
           <Terminal size={14} className="badge-icon" />
-          <span>Supercharged by Gemini 2.5 Flash</span>
+          <span>Powered by Gemini 2.5 Pro Architecture</span>
         </div>
         
         <h1 className="hero-title">
@@ -24,8 +24,7 @@ export default async function Home() {
         </h1>
         
         <p className="hero-description">
-          Practice technical and communication skills with tailored mock interviews. 
-          Get instant, line-by-line AI grading, weaknesses breakdowns, and target recommendations.
+          Experience hyper-realistic mock interviews with our conversational AI. Get evaluated on system design, algorithmic efficiency, and communication clarity with line-by-line feedback.
         </p>
 
         <div className="hero-ctas">
@@ -41,22 +40,13 @@ export default async function Home() {
             </Link>
           )}
         </div>
-
-        {/* Dashboard Mockup Showcase */}
-        <div className="hero-mockup-wrapper animate-fade-in" style={{ marginTop: '80px', width: '100%', maxWidth: '1000px', perspective: '1000px', animationDelay: '0.3s' }}>
-          <div className="glass-card" style={{ padding: '10px', transform: 'rotateX(4deg) translateY(-10px)', boxShadow: '0 30px 60px -15px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(15, 23, 42, 0.05)', transition: 'transform 0.5s ease', borderRadius: '16px' }} 
-               onMouseEnter={(e) => e.currentTarget.style.transform = 'rotateX(0deg) translateY(0)'}
-               onMouseLeave={(e) => e.currentTarget.style.transform = 'rotateX(4deg) translateY(-10px)'}>
-            <img src="/screenshots/dashboard.png" alt="Mockora Dashboard" style={{ width: '100%', height: 'auto', borderRadius: '10px', display: 'block' }} />
-          </div>
-        </div>
       </section>
 
       {/* Features Grid */}
       <section className="features container">
         <div className="section-header">
-          <h2>Fully Featured Preparation Suite</h2>
-          <p>Everything you need to level up and land your dream software job</p>
+          <h2>Enterprise-Grade Preparation Suite</h2>
+          <p>Everything you need to confidently clear FAANG-level engineering interviews.</p>
         </div>
 
         <div className="grid-3">
@@ -66,8 +56,7 @@ export default async function Home() {
             </div>
             <h3>Generative Mock Panel</h3>
             <p>
-              Instantly generate technical questions calibrated for Frontend, Backend, or Fullstack developers 
-              across Entry, Mid, and Senior difficulty settings.
+              Our AI dynamically generates bespoke technical questions calibrated precisely for your target role—from Entry-Level Frontend to Principal Backend Architect.
             </p>
           </div>
 
@@ -75,10 +64,9 @@ export default async function Home() {
             <div className="feature-icon-box">
               <Speech size={22} className="feature-icon" />
             </div>
-            <h3>Interactive Room</h3>
+            <h3>Live Interactive Room</h3>
             <p>
-              Simulate high-fidelity interviews. Toggle audio read-out to hear interviewer questions, 
-              write structures, and manage session timers.
+              Engage in high-fidelity vocal interviews with WebRTC integration. Speak naturally while our AI transcribes, analyzes, and responds in real-time.
             </p>
           </div>
 
@@ -86,10 +74,9 @@ export default async function Home() {
             <div className="feature-icon-box">
               <ShieldCheck size={22} className="feature-icon" />
             </div>
-            <h3>Detailed AI Evaluation</h3>
+            <h3>Comprehensive Evaluation</h3>
             <p>
-              Understand your performance immediately. Obtain metrics on Technical Accuracy, Communication, 
-              Strengths, and read AI-generated ideal code solutions.
+              Receive instant, granular metrics on Big-O complexity, code cleanliness, and soft skills, alongside AI-generated optimal solution pathways.
             </p>
           </div>
         </div>
@@ -101,16 +88,15 @@ export default async function Home() {
           <div className="hook-content">
             <div className="hook-badge">
               <BarChart4 size={18} />
-              <span>Metrics & Insights</span>
+              <span>Advanced Analytics Engine</span>
             </div>
-            <h2>Track Your Growth Over Time</h2>
+            <h2>Track Your Trajectory Over Time</h2>
             <p>
-              Our dashboard maps your performance trends, communication metrics, technical accuracy scores, 
-              and recommends curated focus directories to study next.
+              Our proprietary dashboard aggregates your interview data to build a holistic profile of your engineering capabilities. Spot trends in your communication latency, identify syntax blindspots, and execute curated practice sets tailored to your weakest domains.
             </p>
             <div className="hook-cta">
               <Link href={session ? "/dashboard" : "/register"} className="btn btn-primary">
-                <span>See Analytics Dashboard</span>
+                <span>Access Your Analytics</span>
                 <ArrowRight size={16} />
               </Link>
             </div>
