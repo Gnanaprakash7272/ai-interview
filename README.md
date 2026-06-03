@@ -1,101 +1,78 @@
-<div align="center">
-  <img src="./public/mockora-logo.png" alt="Mockora.ai Logo" width="200"/>
-  <h1>Mockora.ai</h1>
-  <p><b>Next-Generation AI-Powered Technical Interview Platform</b></p>
-  <p>
-    <a href="#features">Features</a> •
-    <a href="#tech-stack">Tech Stack</a> •
-    <a href="#installation">Installation</a> •
-    <a href="#live-demo">Live Demo</a>
-  </p>
-</div>
+# 🎙️ Mockora.ai - AI-Powered Video Interview Platform
 
----
+![Mockora.ai Banner](https://img.shields.io/badge/AI_Interview-Mockora.ai-blue?style=for-the-badge&logo=openai)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-orange?style=for-the-badge&logo=google)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-green?style=for-the-badge&logo=mongodb)
 
-## 🚀 About Mockora.ai
+Mockora.ai is a cutting-edge, fully automated AI mock interview platform designed to help candidates prepare for real-world corporate interviews. It simulates a professional video conferencing environment where a highly intelligent AI recruiter (powered by Google Gemini) conducts real-time, adaptive voice interviews.
 
-**Mockora.ai** is an advanced platform designed to simulate real-world technical interviews using Artificial Intelligence. It helps candidates practice their interviewing skills in a realistic, pressure-free environment. 
+## ✨ Key Features
 
-With a sleek **Dark Mode** user interface, **Real-Time Speech Recognition**, and an interactive **3D AI Recruiter Avatar**, Mockora provides an immersive and highly professional interview experience. All responses are evaluated by the powerful Google Gemini AI model to provide actionable feedback, scoring, and learning resources.
+- **🗣️ Live Speech-to-Speech AI:** Talk directly to the AI! Built-in Speech Recognition and Text-to-Speech (TTS) provide a completely hands-free, real-time voice interview experience.
+- **🇮🇳 Native Indian Voice Accent:** The AI recruiter features a highly realistic Indian English accent (en-IN), speaking at a calm, professional, and easily understandable pace.
+- **🏢 Top 50 MNC Question Bank:** Contains real interview patterns and questions from the world's top 50 tech companies (Google, Amazon, TCS, Infosys, etc.).
+- **⚡ Single-Pass Gemini Architecture:** Optimized Google Gemini 2.5 API integration merges answer evaluation and dynamic next-question generation into a single request, completely eliminating rate-limits and making responses 2x faster.
+- **📊 Granular Data-Analyst Evaluation:** After the interview, receive a highly detailed, mathematically consistent JSON scorecard with metrics for Technical Accuracy, Communication, Confidence, Fluency, and Problem Solving.
+- **🎥 Professional Video-Call UI:** Edge-to-edge, stunning Zoom/Teams-style dark mode interface with immersive animations and layout.
 
----
+## 🛠️ Tech Stack
 
-
-
----
-
-## 🌟 Key Features
-
-- **🤖 Realistic AI Recruiter:** A modern 3D AI avatar that speaks questions out loud and reacts to your speech.
-- **🎙️ Real-Time Speech-to-Text:** Live transcription of your answers using Web Speech API.
-- **🎥 Live Webcam Integration:** Secure, local browser-based webcam integration (WebRTC) to simulate a real face-to-face interview.
-- **🧠 Intelligent Evaluation:** Google Gemini API analyzes your answers for technical accuracy, communication skills, and provides an ideal response.
-- **🎨 Premium UI/UX:** A stunning glassmorphism and dark-mode inspired design with micro-animations.
-- **🔐 Secure Authentication:** Seamless login and registration using NextAuth.js.
-
----
-
-## 🛠 Tech Stack
-
-- **Frontend:** Next.js 14 (App Router), React, Tailwind CSS / Vanilla CSS
-- **Backend:** Next.js Route Handlers
+- **Frontend:** Next.js 14, React, Tailwind CSS, Lucide Icons
+- **Backend:** Next.js API Routes (Serverless)
 - **Database:** MongoDB (Mongoose)
-- **AI Engine:** Google Gemini Pro (`@google/genai`)
-- **Authentication:** NextAuth.js
-- **Icons:** Lucide React
-- **Media APIs:** WebRTC (getUserMedia), Web Speech API (SpeechRecognition & SpeechSynthesis)
+- **Authentication:** NextAuth.js (Google OAuth)
+- **AI Engine:** Google Gemini 2.5 Flash SDK (`@google/genai`)
 
----
+## 🚀 Getting Started
 
-## 🌐 Live Demo
+### Prerequisites
+- Node.js (v18+)
+- MongoDB URI
+- Google Gemini API Key
+- Google OAuth Credentials
 
-Check out the live web application here:
+### Installation
 
-**🔗 [Access Mockora.ai Live](https://main.d1s7w4tg5h6ai1.amplifyapp.com/)**
-
-*(Note: Ensure you access the web app via `https://` to allow camera and microphone permissions).*
-
----
-
-## 💻 Installation & Local Setup
-
-To run this project locally on your machine:
-
-1. **Clone the repository:**
+1. Clone the repository:
    ```bash
    git clone https://github.com/Gnanaprakash7272/ai-interview.git
    cd ai-interview
    ```
 
-2. **Install dependencies:**
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-3. **Set up Environment Variables:**
-   Create a `.env.local` file in the root directory and add the following:
+3. Set up environment variables:
+   Create a `.env` file in the root directory and add the following:
    ```env
-   # MongoDB Connection
    MONGODB_URI=your_mongodb_connection_string
-
-   # Google Gemini API
-   GEMINI_API_KEY=your_gemini_api_key
-
-   # NextAuth
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your_nextauth_secret
+   GOOGLE_ID=your_google_oauth_client_id
+   GOOGLE_SECRET=your_google_oauth_client_secret
+   GEMINI_API_KEY=your_gemini_api_key
    ```
 
-4. **Run the development server:**
+4. Start the development server:
    ```bash
    npm run dev
    ```
 
-5. **Open the app:**
-   Navigate to [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open your browser and navigate to `http://localhost:3000`.
+
+## 🧠 How the AI Works (Architecture)
+
+Mockora.ai utilizes a custom **Data Analyst & Corporate HR Persona Prompt** for Gemini. When a candidate answers a question:
+1. The app captures the audio, converts it to text, and calculates speaking speed/hesitations.
+2. The entire conversation history and current answer are sent to Gemini in a single pass.
+3. Gemini evaluates the response mathematically (0-100 scores) and dynamically generates the *exact next conversational question* based on the candidate's performance.
+4. The AI speaks the generated question back to the candidate via Browser TTS.
+
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
 
 ---
-
-<div align="center">
-  <i>Built with ❤️ for aspiring tech professionals.</i>
-</div>
+*Built with ❤️ by Gnana Prakash.*
