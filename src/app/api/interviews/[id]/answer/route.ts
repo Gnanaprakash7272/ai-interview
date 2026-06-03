@@ -25,7 +25,7 @@ export async function POST(
       return NextResponse.json({ error: "Interview session not found" }, { status: 404 });
     }
 
-    const { responseId, answer, duration, speakingSpeed, hesitationCount } = await req.json();
+    const { responseId, answer, duration, speakingSpeed, hesitationCount, forceEnd } = await req.json();
 
     if (!responseId || answer === undefined) {
       return NextResponse.json({ error: "Response ID and answer are required" }, { status: 400 });
@@ -78,7 +78,7 @@ export async function POST(
     const totalAnsweredCount = completedResponses.length;
 
     // 3. Determine if the interview has reached the question limit
-    if (totalAnsweredCount >= interview.questionCount) {
+    if (totalAnsweredCount >= interview.questionCount || forceEnd) {
       // Interview complete: compile final aggregate scores
       let scoreSum = 0;
       let techSum = 0;
@@ -159,7 +159,7 @@ export async function POST(
 
       return NextResponse.json({
         isCompleted: true,
-        redirectUrl: `/interviews/${interviewId}/feedback`
+        redirectUrl: `/interviews/${interviewId}/completed`
       });
 
     } else {

@@ -73,9 +73,9 @@ export async function generateNextConversationalQuestion(
   if (companyInfo && companyKey !== "general") {
     companyPrompt = `Target Company: ${companyInfo.name}
        Interview Style & Technical Focus for this Company: ${companyInfo.focus}
-       Sample questions to draw inspiration from for this company:
+       MANDATORY INSTRUCTION: You MUST prioritize asking these exact questions or highly related variants that test the same concepts:
        ${companyInfo.sampleQuestions.map((q: string) => `- ${q}`).join("\n")}
-       You must align the interview style, technical rigor, and question choices to match ${companyInfo.name}'s standards.`;
+       You must align the interview style, technical rigor, and question choices to strictly match ${companyInfo.name}'s actual recruitment standards.`;
   } else if (targetCompany && companyKey !== "general") {
     const companyDisplayName = targetCompany.charAt(0).toUpperCase() + targetCompany.slice(1);
     companyPrompt = `Target Company: ${companyDisplayName}
@@ -136,12 +136,16 @@ Candidate Profile:
     try {
       let prompt = "";
       if (isFirstQuestion) {
-        prompt = `You are an expert AI Technical Interviewer, HR Interviewer, and Hiring Manager conducting a real mock interview.
+        prompt = `You are a professional and experienced Corporate Interviewer. Your goal is to conduct highly realistic, adaptive mock interviews for candidates.
+Core Responsibilities:
+Interview Structure: Follow a structured approach based on the number of questions. If the interview has multiple rounds, transition seamlessly between them. When moving to a new round, explicitly announce it.
+Realism: Adapt the difficulty, technical rigor, and interview style to the specific company the candidate is targeting. Use industry-standard terminology.
+Conversational Flow: Act like a real human recruiter. Be warm, supportive, and professional. Ask only one question at a time and wait for the candidate's response.
 
 ${candidateContext}
 Difficulty Level: ${difficulty}
 Interview Focus: ${interviewType} (technical, hr, or mixed)
-Language: ${language} (respond strictly in the selected language. If it is 'ta' respond in Tamil, 'te' in Telugu, 'hi' in Hindi, 'ja' in Japanese, 'en' in English).
+Language: ${language} (respond strictly in the selected language. If it is 'ta' respond in Tamil, 'te' in Telugu, etc.).
 
 ${companyPrompt}
 
@@ -151,19 +155,30 @@ ${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
 ${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
 
 Since this is the FIRST question:
-1. Welcome the candidate briefly (1 sentence) addressing them by name${companyInfo && companyKey !== "general" ? `, and mention that they are interviewing for ${companyInfo.name}` : ""}.
+1. Welcome the candidate briefly addressing them by name${companyInfo && companyKey !== "general" ? `, and mention that they are interviewing for ${companyInfo.name}` : ""}.
 2. Explicitly announce that you are starting the first round as per the CURRENT INTERVIEW STAGE.
-3. Ask a highly relevant first interview question tailored specifically to the candidate's skills and experience level. If a resume is provided, ask about a specific project or skill on it. If skills are provided, ask about one of their listed skills.
+3. Ask a highly relevant first interview question tailored specifically to the candidate's skills and experience.
 
-Output ONLY the final spoken recruiter message. Do not include any HTML, markdown, tags, or JSON.`;
+Constraints:
+Output ONLY the final spoken recruiter message.
+Do NOT include any JSON, Markdown tags, labels (like "Interviewer:"), or internal reasoning in the final output.
+Keep the tone encouraging but strictly professional, just like a real interview panel.`;
       } else {
         const historyText = history.map((h, i) => `Q${i+1}: ${h.question}\nA${i+1}: ${h.answer}`).join("\n\n");
-        prompt = `You are an expert AI Technical Interviewer conducting a conversational mock interview.
+        prompt = `You are a professional and experienced Corporate Interviewer. Your goal is to conduct highly realistic, adaptive mock interviews for candidates.
+Core Responsibilities:
+Interview Structure: Follow a structured approach based on the number of questions. If the interview has multiple rounds, transition seamlessly between them. When moving to a new round, explicitly announce it.
+Realism: Adapt the difficulty, technical rigor, and interview style to the specific company the candidate is targeting. Use industry-standard terminology.
+Conversational Flow: Act like a real human recruiter. Be warm, supportive, and professional. Ask only one question at a time and wait for the candidate's response.
+Adaptive Feedback:
+If the candidate is vague, ask a follow-up to dig deeper.
+If they are incorrect, professionally correct them before moving on.
+If they ask to repeat the question or don't understand, rephrase the question more simply.
 
 ${candidateContext}
 Difficulty Level: ${difficulty}
 Interview Focus: ${interviewType} (technical, hr, or mixed)
-Language: ${language} (respond strictly in the selected language. If it is 'ta' respond in Tamil, 'te' in Telugu, 'hi' in Hindi, 'ja' in Japanese, 'en' in English).
+Language: ${language} (respond strictly in the selected language. If it is 'ta' respond in Tamil, 'te' in Telugu, etc.).
 
 ${companyPrompt}
 
@@ -177,12 +192,14 @@ ${historyText}
 
 Generate the NEXT conversational follow-up question.
 Guidelines:
-1. Address ${candidateName || "the candidate"} by name occasionally to keep it natural.
-2. CRITICAL: Read the candidate's last answer closely. If they ask to "repeat the question", or say they don't understand, DO NOT move on. Simply repeat your previous question in a slightly simplified way.
-3. If they gave a highly incorrect technical answer, briefly and professionally correct them (e.g., "Actually, [concept] works by...") before asking your follow-up question. If their answer was just vague, ask a follow-up digging deeper.
-4. If they answered well, move on to the next related technical topic or increase difficulty.
-5. Keep the conversation extremely natural, strict, and professional like a real human recruiter.
-6. Output ONLY the final spoken recruiter question. Do not include any tags, markdown, or JSON.`;
+1. Address ${candidateName || "the candidate"} by name occasionally to keep it personal.
+2. If they ask to "repeat the question", rephrase the question more simply.
+3. If they give a wrong answer, professionally correct them before moving on.
+4. Keep the tone encouraging but strictly professional.
+
+Constraints:
+Output ONLY the final spoken recruiter message.
+Do NOT include any JSON, Markdown tags, labels (like "Interviewer:"), or internal reasoning in the final output.`;
       }
 
       const response = await ai.models.generateContent({
@@ -256,7 +273,7 @@ export async function evaluateAnswer(
 
   if (ai) {
     try {
-      const prompt = `You are an expert Technical Interviewer, HR Interviewer, Placement Trainer, and Hiring Manager. Evaluate the candidate's answer to the interview question below.
+      const prompt = `Act as an expert evaluator and data analyst. Your task is to ensure that the overall score is mathematically consistent with all the granular scores provided in the evaluation breakdown. All individual scores, such as technical accuracy, communication, and problem-solving, must be factored into the total score correctly without discrepancies.
 
 Interview Context:
 - Job Role: ${jobRole || "Software Developer"}
@@ -280,6 +297,7 @@ Evaluation Criteria:
 7. Problem Solving Score (0-10): Analytical thinking, approach structure, and solution quality.
 
 CRITICAL RULES:
+- MATHEMATICAL CONSISTENCY: The overall 'score' (0-100) MUST be a logical, weighted average of the sub-scores (Technical Accuracy, Communication, Confidence, Fluency). Do not output an overall score of 90 if the sub-scores are in the 50s.
 - If the candidate's answer is irrelevant, gibberish, very short, or simply asks to "repeat the question", you MUST score Technical Accuracy as 0, Problem Solving as 0, and note this in weaknesses.
 - Do NOT generate generic "A strong answer would define the concept..." text. Write a SPECIFIC, highly technical expected answer for the EXACT question asked.
 - The improvedAnswer MUST be a highly professional, technically deep rewrite of the candidate's attempt. If they didn't attempt it, write a strong first-person answer they COULD have used.
@@ -292,7 +310,7 @@ Provide:
 - suggestions: at least 2 actionable improvement tips
 - missingConcepts: specific technical keywords they failed to mention
 - expectedAnswer: SPECIFIC technical answer to the exact question (2-4 sentences, written as expert reference)
-- improvedAnswer: CRITICAL: If their answer was wrong or incomplete, explicitly correct them by saying "You mentioned [their point], but that is incorrect/incomplete. Instead, you should say: [Full Correct Answer]". Make it highly direct, corrective, and conversational.
+- improvedAnswer: CRITICAL: Provide a VERY SHORT and CONCISE correction or improvement (maximum 2-3 sentences). Keep it brief, punchy, and directly to the point without writing long paragraphs.
 
 Also determine hiringRecommendation based on overall performance:
 - "Strong Hire": Score >= 85, excellent technical accuracy and communication

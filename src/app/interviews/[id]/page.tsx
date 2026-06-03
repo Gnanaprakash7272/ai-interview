@@ -56,6 +56,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
   // Speech Recognition State
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Web Audio Visualizer Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -162,6 +163,13 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
       }
     };
   }, [videoEnabled, audioEnabled, loading, submitting]);
+
+  // Attach stream to video element when stream or videoRef becomes available
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
 
   // Web Audio Waveform Visualizer
   const startVisualizer = () => {
@@ -347,20 +355,49 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     
     // Choose correct language code
     const langCodeMap: Record<string, string> = {
-      en: "en-US",
+      en: "en-IN",
       ta: "ta-IN",
       te: "te-IN",
       hi: "hi-IN",
       ja: "ja-JP"
     };
-    utterance.lang = langCodeMap[language] || "en-US";
+    utterance.lang = langCodeMap[language] || "en-IN";
 
-    const voices = window.speechSynthesis.getVoices();
-    const matchVoice = voices.find(
-      (v) => v.lang.toLowerCase().replace("_", "-").startsWith(langCodeMap[language] || "en-US")
-    );
-    if (matchVoice) {
-      utterance.voice = matchVoice;
+    utterance.rate = 0.85; // Speak slowly and clearly
+    utterance.pitch = 0.95; // Slightly lower pitch for a calm, professional tone
+
+    let voices = window.speechSynthesis.getVoices();
+    
+    const setIndianVoice = () => {
+      voices = window.speechSynthesis.getVoices();
+      // 1. Try to find a voice with 'India' or specific Indian names in it
+      let matchVoice = voices.find(v => 
+        (v.name.toLowerCase().includes('india') || v.name.toLowerCase().includes('heera') || v.name.toLowerCase().includes('ravi')) 
+        && v.lang.includes('en')
+      );
+      
+      // 2. Fallback to exact 'en-IN' language code
+      if (!matchVoice) {
+        matchVoice = voices.find((v) => v.lang.toLowerCase().replace("_", "-") === 'en-in');
+      }
+      
+      // 3. Fallback to any matching lang code
+      if (!matchVoice) {
+        matchVoice = voices.find((v) => v.lang.toLowerCase().replace("_", "-").startsWith(langCodeMap[language] || "en-IN"));
+      }
+
+      if (matchVoice) {
+        utterance.voice = matchVoice;
+      }
+    };
+
+    setIndianVoice();
+    
+    // In case voices are loaded asynchronously (Chrome bug)
+    if (voices.length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        setIndianVoice();
+      };
     }
     
     utterance.onend = () => {
@@ -451,13 +488,13 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     recognition.interimResults = true;
 
     const langCodeMap: Record<string, string> = {
-      en: "en-US",
+      en: "en-IN",
       ta: "ta-IN",
       te: "te-IN",
       hi: "hi-IN",
       ja: "ja-JP"
     };
-    recognition.lang = langCodeMap[language] || "en-US";
+    recognition.lang = langCodeMap[language] || "en-IN";
 
     recognition.onstart = () => {
       setIsRecording(true);
@@ -486,6 +523,20 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
         ...prev,
         [currentId]: updatedAnswer
       }));
+
+      // --- SIMULATED LIVE AUTO SUBMIT LOGIC ---
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+      }
+      
+      // Auto-submit if silence is detected and there's enough meaningful text
+      const isMeaningful = updatedAnswer.split(" ").length >= 3; 
+      if (isMeaningful) {
+        silenceTimerRef.current = setTimeout(() => {
+          stopRecording();
+          handleAnswerSubmit(false, updatedAnswer);
+        }, 3000); // 3 seconds of silence
+      }
     };
 
     recognition.onerror = (err: any) => {
@@ -514,6 +565,9 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
     }
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+    }
   }
 
   // Clean up speaking & recording on transition
@@ -539,6 +593,9 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
       if (durationIntervalRef.current) {
         clearInterval(durationIntervalRef.current);
       }
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+      }
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
@@ -552,7 +609,9 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
   };
 
   // Submit Answer Step-by-Step Conversational Recruiter loop
-  const handleAnswerSubmit = async () => {
+  const handleAnswerSubmit = async (forceEnd: boolean = false, overrideAnswer?: string) => {
+    if (typeof forceEnd !== "boolean") forceEnd = false;
+
     if (isRecording) {
       stopRecording();
     }
@@ -563,7 +622,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     const currentResponse = responses[currentIndex];
     if (!currentResponse) return;
 
-    const currentAnswer = answers[currentResponse._id] || "";
+    const currentAnswer = overrideAnswer !== undefined ? overrideAnswer : (answers[currentResponse._id] || "");
     
     // Voice calculations
     const wordCount = currentAnswer.trim() ? currentAnswer.trim().split(/\s+/).length : 0;
@@ -580,7 +639,8 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
           answer: currentAnswer,
           duration: finalDuration,
           speakingSpeed: finalSpeed,
-          hesitationCount: finalHesitations
+          hesitationCount: finalHesitations,
+          forceEnd: forceEnd
         })
       });
 
@@ -676,11 +736,9 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
   const progressPercent = ((currentIndex + 1) / responses.length) * 100;
 
   return (
-    <div className="room-wrapper container animate-fade-in">
-      <div className="app-bg-glow"></div>
-
+    <div className="professional-room-wrapper animate-fade-in">
       {/* Top Session Bar */}
-      <header className="room-navbar glass-card">
+      <header className="room-navbar">
         <div className="room-meta">
           <span className="room-domain-badge">{domain.replace("_", " ")}</span>
           <span className="room-difficulty-badge">{difficulty} Level</span>
@@ -696,7 +754,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
       <div className="video-call-grid">
         
         {/* Left/Top Tile: AI Recruiter */}
-        <div className="video-tile recruiter-tile glass-card">
+        <div className="video-tile recruiter-tile">
           <div className="tile-header">
             <div className="tile-header-left">
               <Bot size={16} />
@@ -730,7 +788,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
         </div>
 
         {/* Right/Bottom Tile: Candidate Webcam */}
-        <div className="video-tile candidate-tile glass-card">
+        <div className="video-tile candidate-tile">
           <div className="tile-header">
             <div className="tile-header-left">
               <User size={16} />
@@ -765,7 +823,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
               <canvas ref={canvasRef} width={200} height={30} className="audio-waveform-canvas-mini" />
             </div>
             <p className="caption-text user-caption">
-              {currentAnswer || <em style={{ opacity: 0.5 }}>{isRecording ? "Listening..." : "Click Mic to speak..."}</em>}
+              {currentAnswer || <em style={{ opacity: 0.5 }}>{isRecording ? "Listening... (Auto-submits on pause)" : "Waiting for AI to speak..."}</em>}
             </p>
           </div>
         </div>
@@ -773,7 +831,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
       </div>
 
       {/* Bottom Meeting Control Bar */}
-      <footer className="meeting-control-bar glass-card">
+      <footer className="meeting-control-bar">
         <div className="control-left">
           <div className="meeting-stats">
             <span>Q{currentIndex + 1} of {responses.length}</span>
@@ -802,10 +860,21 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
           </button>
         </div>
 
-        <div className="control-right">
+        <div className="control-right" style={{ display: 'flex', gap: '12px' }}>
+          {currentIndex + 1 < responses.length && (
+            <button 
+              onClick={() => handleAnswerSubmit(true)} 
+              disabled={submitting}
+              className="meeting-submit-btn btn-secondary"
+              style={{ padding: '12px 16px', opacity: 0.8 }}
+              title="End the interview early and get report"
+            >
+              <span>Quit Early</span>
+            </button>
+          )}
           <button 
-            onClick={handleAnswerSubmit} 
-            disabled={!currentAnswer.trim() || submitting}
+            onClick={() => handleAnswerSubmit(false)} 
+            disabled={submitting}
             className="meeting-submit-btn btn-primary"
           >
             <span>{submitting ? "Processing..." : (currentIndex + 1 >= responses.length ? "Finish & Get Report" : "Submit Answer")}</span>

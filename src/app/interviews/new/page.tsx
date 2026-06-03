@@ -8,6 +8,7 @@ import {
   User, Wrench, Briefcase, CheckCircle
 } from "lucide-react";
 import allCompanies from "@/data/allCompanies.json";
+import companyQuestions from "@/data/companyQuestions.json";
 
 const JOB_ROLES = [
   { id: "cloud_engineer", name: "Cloud Engineer", icon: Cpu, desc: "AWS, Cloud architecture, Terraform, serverless, VPC networks, scaling." },
@@ -47,20 +48,12 @@ const EXPERIENCE_LEVELS = [
 
 const QUESTION_COUNTS = [3, 5];
 
-const COMPANIES = [
-  { id: "general", name: "General Mock", desc: "Standard recruiter guidelines and CS fundamentals.", domain: null },
-  { id: "google", name: "Google", desc: "Heavy DSA algorithms, system design, complexity tradeoffs.", domain: "google.com" },
-  { id: "amazon", name: "Amazon", desc: "Leadership principles, AWS cloud scaling, microservice resilience.", domain: "amazon.com" },
-  { id: "microsoft", name: "Microsoft", desc: "OOP design, systems programming, thread safety, Azure patterns.", domain: "microsoft.com" },
-  { id: "tcs", name: "TCS", desc: "Core technical basics, Java/DBMS, SQL queries, SDLC models.", domain: "tcs.com" },
-  { id: "infosys", name: "Infosys", desc: "Web dev fundamentals, database normalization, REST APIs, testing.", domain: "infosys.com" },
-  { id: "zoho", name: "Zoho", desc: "C/Java dry runs, custom array/string logic, L2 OOP designs, and L3 systems.", domain: "zoho.com" },
-  { id: "adobe", name: "Adobe", desc: "Advanced DSA, graphics rendering algorithms, system-level design.", domain: "adobe.com" },
-  { id: "cisco", name: "Cisco", desc: "TCP/IP socket networks, operating systems, routing protocols.", domain: "cisco.com" },
-  { id: "paypal", name: "PayPal", desc: "Transaction concurrency, distributed API scale, payment resilience.", domain: "paypal.com" },
-  { id: "walmart", name: "Walmart", desc: "High-scale inventory systems, event-driven messaging (Kafka), Java microservices.", domain: "walmart.com" },
-  { id: "accenture", name: "Accenture", desc: "Enterprise API integration, SDLC methods, and client scenarios.", domain: "accenture.com" }
-];
+const COMPANIES = Object.entries(companyQuestions).map(([id, data]: [string, any]) => ({
+  id,
+  name: data.name,
+  desc: data.focus.length > 80 ? data.focus.substring(0, 77) + "..." : data.focus,
+  domain: data.domain || null
+}));
 
 const getCompanyDomain = (name: string) => {
   const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -223,7 +216,7 @@ export default function NewInterview() {
         throw new Error(data.error || "Failed to initialize interview");
       }
 
-      router.push(`/interviews/${data.interview._id}`);
+      router.push(`/interviews/${data.interview._id}/setup`);
     } catch (error) {
       console.error(error);
       alert("Error starting interview. Please check your network and API key settings.");

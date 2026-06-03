@@ -1,7 +1,17 @@
 {
+  "general": {
+    "name": "General Mock",
+    "domain": null,
+    "focus": "General computer science fundamentals, coding problem-solving, and communication skills.",
+    "sampleQuestions": [
+      "Tell me about a complex project you recently worked on. What were the technical challenges you faced?",
+      "What are your core strengths as a software developer, and how do you keep yourself updated with new tech?"
+    ]
+  },
   "google": {
     "name": "Google",
-    "focus": "Algorithms, Data Structures, System Design, Scalability, and low-level performance analysis.",
+    "domain": "google.com",
+    "focus": "Heavy DSA algorithms, system design, scalability, and complexity tradeoffs.",
     "sampleQuestions": [
       "Explain how a hash map handles collisions internally, and discuss the time complexity tradeoffs.",
       "How would you design a distributed rate limiter for a global API servicing millions of requests per second?",
@@ -10,7 +20,8 @@
   },
   "amazon": {
     "name": "Amazon",
-    "focus": "Customer Obsession, Leadership Principles, Architectural Scalability, AWS cloud design patterns, and ownership.",
+    "domain": "amazon.com",
+    "focus": "Leadership principles, AWS cloud scaling, microservice resilience, and customer obsession.",
     "sampleQuestions": [
       "Describe a time when you had to make a quick decision without complete data. What was the impact?",
       "How would you design a high-throughput shopping cart system that handles flash sale workloads on AWS?",
@@ -19,92 +30,472 @@
   },
   "microsoft": {
     "name": "Microsoft",
-    "focus": "OOP principles, systems programming, memory management, Azure integrations, and operating system basics.",
+    "domain": "microsoft.com",
+    "focus": "OOP design, systems programming, thread safety, Azure patterns, and memory management.",
     "sampleQuestions": [
       "Explain the concept of memory leaks in managed versus unmanaged languages, and how to debug them.",
       "How would you implement a thread-safe Singleton pattern in a modern programming language?",
       "Design a real-time collaborative document editing system like Microsoft Office Online."
     ]
   },
+  "meta": {
+    "name": "Meta",
+    "domain": "meta.com",
+    "focus": "Front-end engineering (React, DOM manipulation), scaling social graphs, product sense, system design.",
+    "sampleQuestions": [
+      "Given a DOM tree and a target element, write a JavaScript function to find the corresponding element in an identical DOM tree.",
+      "Design a news feed system for a social media application like Facebook. How do you handle ranking and pagination?",
+      "How would you implement an infinite scroll feature from scratch using Vanilla JavaScript and Intersection Observer?"
+    ]
+  },
+  "apple": {
+    "name": "Apple",
+    "domain": "apple.com",
+    "focus": "Product design intuition, extreme attention to UI/UX details, performance constraints, OS fundamentals.",
+    "sampleQuestions": [
+      "How would you design a framework that handles background data syncing across millions of iOS devices without draining the battery?",
+      "Explain the tradeoffs between using GCD (Grand Central Dispatch) and OperationQueues in Swift for handling multi-threading.",
+      "Design a highly secure end-to-end encrypted messaging protocol similar to iMessage."
+    ]
+  },
+  "netflix": {
+    "name": "Netflix",
+    "domain": "netflix.com",
+    "focus": "Microservices, high-availability architecture, video streaming protocols, chaos engineering, CDN.",
+    "sampleQuestions": [
+      "Design a global video streaming service. How would you handle content delivery network (CDN) caching for viral content?",
+      "Explain the principles of Chaos Engineering. How would you design a system that survives random server terminations?",
+      "How would you implement a personalized recommendation engine that handles millions of events per second?"
+    ]
+  },
+  "oracle": {
+    "name": "Oracle",
+    "domain": "oracle.com",
+    "focus": "Deep database internals, advanced SQL, transactional locks, cloud infrastructure, and Java enterprise architecture.",
+    "sampleQuestions": [
+      "Explain the internal implementation of a B-Tree index in a relational database. Why is it preferred over a Hash index for range queries?",
+      "How do you handle deadlocks in a highly concurrent database system? Explain the Two-Phase Locking (2PL) protocol.",
+      "Write an advanced SQL query using Window Functions to find the top 3 highest-earning employees in each department."
+    ]
+  },
+  "ibm": {
+    "name": "IBM",
+    "domain": "ibm.com",
+    "focus": "Enterprise hybrid cloud, AI integrations (Watson), mainframes, microservices architecture, and deep technical consulting.",
+    "sampleQuestions": [
+      "Explain the concept of hybrid cloud architecture and the security considerations when migrating legacy on-prem data.",
+      "How do you ensure data integrity in a distributed microservices environment using the Saga pattern?",
+      "What are the key differences between containerization (Docker) and virtualization (VMs) at the OS kernel level?"
+    ]
+  },
+  "salesforce": {
+    "name": "Salesforce",
+    "domain": "salesforce.com",
+    "focus": "Multi-tenant architecture, CRM customizations (Apex/Lightning), API integrations, and scalable SaaS platforms.",
+    "sampleQuestions": [
+      "How would you design a multi-tenant database schema where different clients need completely customizable data fields?",
+      "Explain how OAuth 2.0 works in the context of integrating a third-party application with Salesforce APIs.",
+      "What strategies would you use to prevent noisy-neighbor problems in a multi-tenant SaaS environment?"
+    ]
+  },
+  "uber": {
+    "name": "Uber",
+    "domain": "uber.com",
+    "focus": "Real-time geospacial routing, massive scale microservices, event streaming, matching algorithms.",
+    "sampleQuestions": [
+      "Design a ride-matching system that pairs drivers with riders. How do you handle high concurrency in a specific city?",
+      "Explain how you would use Quadtrees or Geohashing to find the nearest available drivers efficiently.",
+      "How do you implement an idempotent payment processing system to ensure riders aren't charged twice during network failures?"
+    ]
+  },
+  "airbnb": {
+    "name": "Airbnb",
+    "domain": "airbnb.com",
+    "focus": "Search indexing, global availability scaling, payment localization, and responsive frontend architectures.",
+    "sampleQuestions": [
+      "How would you design the search and filtering system for Airbnb, ensuring low latency for complex date and location queries?",
+      "Explain how you handle timezone and currency conversion issues in a globally distributed application.",
+      "Design an inventory management system to prevent double-booking of a single property during peak traffic."
+    ]
+  },
+  "stripe": {
+    "name": "Stripe",
+    "domain": "stripe.com",
+    "focus": "Payment gateway reliability, API design, idempotency, strict data consistency, and security.",
+    "sampleQuestions": [
+      "Explain what an Idempotency Key is and how you would implement an idempotent API for processing payments.",
+      "How do you safely store and process credit card information while remaining PCI-DSS compliant?",
+      "Design a webhook delivery system that ensures clients receive transaction updates reliably, even if their servers are temporarily down."
+    ]
+  },
+  "tesla": {
+    "name": "Tesla",
+    "domain": "tesla.com",
+    "focus": "C++ embedded systems, AI/Computer Vision, low-latency firmware, edge computing, and real-time processing.",
+    "sampleQuestions": [
+      "Explain how a Real-Time Operating System (RTOS) differs from a general-purpose OS in handling hardware interrupts.",
+      "How would you design a fast computer vision pipeline to detect lane lines from a real-time camera feed at 60 FPS?",
+      "What techniques do you use to prevent memory fragmentation in an embedded C++ application?"
+    ]
+  },
+  "nvidia": {
+    "name": "NVIDIA",
+    "domain": "nvidia.com",
+    "focus": "CUDA programming, parallel processing, GPU architecture, deep learning frameworks, and graphics rendering.",
+    "sampleQuestions": [
+      "Explain the concept of memory hierarchy in a GPU and the difference between shared memory and global memory.",
+      "How would you parallelize a matrix multiplication algorithm using CUDA to maximize tensor core utilization?",
+      "What are the primary bottlenecks in transferring data between the CPU (Host) and GPU (Device) over PCIe?"
+    ]
+  },
+  "intel": {
+    "name": "Intel",
+    "domain": "intel.com",
+    "focus": "Computer architecture, VLSI design, C/C++ hardware interfaces, firmware, and microprocessor optimizations.",
+    "sampleQuestions": [
+      "Explain the concept of branch prediction and how a pipeline stall affects CPU performance.",
+      "How does CPU cache coherence work in a multi-core processor? Explain the MESI protocol.",
+      "Write a low-level C function to reverse the bits of a 32-bit unsigned integer efficiently."
+    ]
+  },
   "tcs": {
     "name": "TCS",
+    "domain": "tcs.com",
     "focus": "Core Java, DBMS/SQL Queries, SDLC models (Agile vs Waterfall), OOPs concepts, and software testing.",
     "sampleQuestions": [
       "What is polymorphism in Object-Oriented Programming, and what is the difference between overloading and overriding?",
-      "How would you write or explain a query to find the second highest salary from an Employee database table?",
+      "How would you write a query to find the second highest salary from an Employee table?",
       "Explain the difference between Agile and Waterfall development life cycles."
     ]
   },
   "infosys": {
     "name": "Infosys",
-    "focus": "Web technologies, database fundamentals (Normalization, Indexing), REST APIs, and basic software testing.",
+    "domain": "infosys.com",
+    "focus": "Web technologies, database fundamentals (Normalization, Indexing), REST APIs, and basic testing.",
     "sampleQuestions": [
       "Explain the normalization process in relational databases up to Third Normal Form (3NF).",
       "What are REST APIs? What are the key HTTP methods and response codes you would use?",
       "What is the difference between black-box testing and white-box testing?"
     ]
   },
+  "cognizant": {
+    "name": "Cognizant",
+    "domain": "cognizant.com",
+    "focus": "Core Java, OOP principles, SQL queries, Agile methodologies, basic data structures, and client communication.",
+    "sampleQuestions": [
+      "What are the differences between an Abstract Class and an Interface in Java? When would you use which?",
+      "Write a SQL query to fetch all duplicate records from a table without using the DISTINCT keyword.",
+      "Explain the MVC (Model-View-Controller) design pattern and how you would implement it in a Spring Boot application."
+    ]
+  },
+  "wipro": {
+    "name": "Wipro",
+    "domain": "wipro.com",
+    "focus": "Web fundamentals (HTML/CSS/JS), Database normalization, SDLC concepts, and logical programming.",
+    "sampleQuestions": [
+      "Write a program to reverse a string without using any built-in methods.",
+      "Explain the different types of Joins in SQL with real-world examples.",
+      "What is the difference between a process and a thread? Explain with an operating system context."
+    ]
+  },
+  "hcl": {
+    "name": "HCL",
+    "domain": "hcltech.com",
+    "focus": "IT infrastructure, cloud migrations, Java/C++ core logic, networking, and enterprise service bus.",
+    "sampleQuestions": [
+      "How do you handle exception propagation in Java? Explain checked vs unchecked exceptions.",
+      "What is the role of a Load Balancer in a server cluster, and what algorithms does it use?",
+      "Write a program to detect a loop in a Singly Linked List."
+    ]
+  },
+  "techmahindra": {
+    "name": "Tech Mahindra",
+    "domain": "techmahindra.com",
+    "focus": "Telecom domain networking, API testing, SQL, Java basic algorithms, and project lifecycle.",
+    "sampleQuestions": [
+      "Explain the OSI model and describe what happens at the Network and Transport layers.",
+      "How do you connect a Java application to a database using JDBC? Mention the core steps.",
+      "What is the difference between a GET and POST request in REST? When should you use PUT vs PATCH?"
+    ]
+  },
+  "accenture": {
+    "name": "Accenture",
+    "domain": "accenture.com",
+    "focus": "Enterprise integration patterns, REST/SOAP APIs, SDLC models, and client consulting situational readiness.",
+    "sampleQuestions": [
+      "Explain the difference between SOAP and REST web services, and how you would migrate a legacy SOAP service to REST.",
+      "How would you coordinate with client stakeholders to gather technical specifications for a database migration?",
+      "What is the difference between functional, integration, and user acceptance testing (UAT)?"
+    ]
+  },
+  "capgemini": {
+    "name": "Capgemini",
+    "domain": "capgemini.com",
+    "focus": "Cloud-native dev, Spring Boot, microservices architecture, databases, and DevOps practices.",
+    "sampleQuestions": [
+      "Explain the concept of Dependency Injection in Spring Boot. Why is it useful?",
+      "How do you implement CI/CD pipelines? What tools have you used and how do they integrate?",
+      "Write a SQL query to find employees who do not belong to any assigned department."
+    ]
+  },
+  "deloitte": {
+    "name": "Deloitte",
+    "domain": "deloitte.com",
+    "focus": "Technical consulting, cybersecurity basics, ERP integrations, data analytics, and behavioral scenarios.",
+    "sampleQuestions": [
+      "How would you explain a complex technical architecture to a non-technical business stakeholder?",
+      "What are the core differences between a Data Lake and a Data Warehouse? When would you recommend each?",
+      "Explain the principle of least privilege in cybersecurity and how you apply it to cloud roles."
+    ]
+  },
   "zoho": {
     "name": "Zoho",
-    "focus": "C/Java dry runs, custom recursion, pattern printing, custom array/string algorithms without using standard library functions, L2 Object-Oriented design (e.g. Call Taxi booking, Railway Reservation), and L3 System Design.",
+    "domain": "zoho.com",
+    "focus": "C/Java dry runs, custom array/string logic, L2 OOP designs, and L3 systems.",
     "sampleQuestions": [
-      "Design a Call Taxi Booking System with linear points A-F, booking allocation based on nearest free taxi or lowest earnings in case of a tie, and details tracking.",
-      "Write a logic in Java/C to print a 2D matrix in spiral or zig-zag fashion, or checking if the version string comparison represents an upgrade or downgrade.",
-      "Explain how you would find the first occurrence of all characters of a second string in a first string, printing characters between the lowest and highest index.",
-      "How would you solve the MS-Paint Flood Fill algorithm to replace the color of a given pixel and all adjacent same-colored pixels?"
+      "Design a Call Taxi Booking System with linear points A-F, booking allocation based on nearest free taxi.",
+      "Write a logic in Java/C to print a 2D matrix in spiral or zig-zag fashion.",
+      "How would you solve the MS-Paint Flood Fill algorithm to replace the color of a given pixel?"
     ]
   },
   "adobe": {
     "name": "Adobe",
-    "focus": "Advanced data structures (trees, tries, graphs), low-level system performance, graphics/rendering optimizations, and Object-Oriented Design (OOD).",
+    "domain": "adobe.com",
+    "focus": "Advanced DSA, graphics rendering algorithms, system-level design, and OOPs.",
     "sampleQuestions": [
       "Explain how you would optimize a polygon rendering algorithm to reduce memory usage during graphics processing.",
-      "How would you design a real-time collaborative whiteboarding tool that synchronizes updates across thousands of concurrent clients?",
-      "Explain the time and space complexity difference between using a Trie vs a HashMap for autocomplete search suggestions."
+      "How would you design a real-time collaborative whiteboarding tool that synchronizes updates across clients?",
+      "Explain the time and space complexity difference between using a Trie vs a HashMap for autocomplete."
     ]
   },
   "cisco": {
     "name": "Cisco",
-    "focus": "TCP/IP networking stacks, protocol implementations, operating systems fundamentals (processes, memory management), concurrency, and C/C++ systems development.",
+    "domain": "cisco.com",
+    "focus": "TCP/IP socket networks, operating systems, routing protocols, and C/C++ networking.",
     "sampleQuestions": [
-      "What is the difference between TCP and UDP at the socket level? Under what scenario would you write a custom application-layer protocol on UDP?",
+      "What is the difference between TCP and UDP at the socket level? Under what scenario would you write a custom UDP protocol?",
       "Explain how a router handles package header validation and checksum checks at wire speed.",
-      "What are the deadlock prevention techniques in operating systems, and how would you implement a lock-ordering system?"
+      "What are the deadlock prevention techniques in operating systems?"
     ]
   },
   "paypal": {
     "name": "PayPal",
-    "focus": "Transactional integrity (ACID), API rate limiting, distributed payment orchestration, and database concurrency controls.",
+    "domain": "paypal.com",
+    "focus": "Transaction concurrency, distributed API scale, payment resilience, database locks.",
     "sampleQuestions": [
-      "How would you ensure double-spend prevention in a highly concurrent distributed payments API under network partition?",
-      "What is your approach to handling multi-currency conversion transactions with strict decimal precision and roundoff compliance?",
+      "How would you ensure double-spend prevention in a highly concurrent distributed payments API?",
+      "What is your approach to handling multi-currency conversion transactions with strict decimal precision?",
       "Design a token bucket rate limiter to protect payment processing APIs from sudden traffic spikes."
     ]
   },
   "walmart": {
     "name": "Walmart",
-    "focus": "E-commerce inventory scaling, order-fulfillment pipeline architectures, message brokers (Kafka), and cloud-native microservices.",
+    "domain": "walmart.com",
+    "focus": "High-scale inventory systems, event-driven messaging (Kafka), Java microservices.",
     "sampleQuestions": [
-      "Design a real-time global stock-level tracker that updates product availability instantly across millions of store-front page views.",
-      "How do you structure event-driven messaging queues to guarantee order delivery while processing transactions asynchronously?",
+      "Design a real-time global stock-level tracker that updates product availability instantly.",
+      "How do you structure event-driven messaging queues to guarantee order delivery?",
       "Explain how you would handle read-heavy caching strategies for product catalog search results during a peak flash sale."
     ]
   },
-  "accenture": {
-    "name": "Accenture",
-    "focus": "Enterprise integration patterns, REST/SOAP APIs, software development life cycle (SDLC) models, and client consulting situational readiness.",
+  "goldmansachs": {
+    "name": "Goldman Sachs",
+    "domain": "goldmansachs.com",
+    "focus": "Low-latency systems, complex math, advanced DSA, probability, and finance data modeling.",
     "sampleQuestions": [
-      "Explain the difference between SOAP and REST web services, and how you would migrate a legacy SOAP service to REST.",
-      "How would you coordinate with client stakeholders to gather technical specifications for a large-scale database migration project?",
-      "What is the difference between functional, integration, and user acceptance testing (UAT) in enterprise delivery?"
+      "How would you design an in-memory order matching engine for a stock exchange?",
+      "Given a stream of numbers, how do you find the median of the stream in O(log N) time?",
+      "Explain the concept of garbage collection pauses in Java and how to minimize them in trading apps."
     ]
   },
-  "general": {
-    "name": "General Mock",
-    "focus": "General computer science fundamentals, coding problem-solving, and communication skills.",
+  "jpmorgan": {
+    "name": "JPMorgan Chase",
+    "domain": "jpmorgan.com",
+    "focus": "Secure software engineering, massive transactional databases, Java Spring Boot, messaging systems.",
     "sampleQuestions": [
-      "Tell me about a complex project you recently worked on. What were the technical challenges you faced?",
-      "What are your core strengths as a software developer, and how do you keep yourself updated with new tech?"
+      "How do you implement distributed transactions across multiple microservices without locking the entire database?",
+      "What is Cross-Site Scripting (XSS) and how do you protect a modern React/Angular app from it?",
+      "Explain the differences between ActiveMQ and Apache Kafka. Which one is better for event sourcing?"
+    ]
+  },
+  "morganstanley": {
+    "name": "Morgan Stanley",
+    "domain": "morganstanley.com",
+    "focus": "Core Java, multithreading, concurrency, algorithmic efficiency, system robustness.",
+    "sampleQuestions": [
+      "Implement a custom BlockingQueue in Java using wait() and notify() mechanisms.",
+      "How does a ConcurrentHashMap work internally in Java 8 compared to earlier versions?",
+      "What is the Volatile keyword in Java? Explain memory visibility and instruction reordering."
+    ]
+  },
+  "visa": {
+    "name": "Visa",
+    "domain": "visa.com",
+    "focus": "Extremely high throughput, strict security compliance, cryptographic hashing, and fraud detection patterns.",
+    "sampleQuestions": [
+      "Design a real-time fraud detection pipeline that analyzes transactions with less than 10ms latency.",
+      "Explain how asymmetric encryption works and how it is used in securing API payloads.",
+      "How do you scale a monolithic payment processing system to a globally distributed cloud architecture?"
+    ]
+  },
+  "mastercard": {
+    "name": "Mastercard",
+    "domain": "mastercard.com",
+    "focus": "Payment tokenization, API security, Java backends, and zero-downtime deployments.",
+    "sampleQuestions": [
+      "Explain the concept of tokenization in payment gateways and why it is more secure than storing raw card details.",
+      "How do you achieve zero-downtime deployments in a Kubernetes environment?",
+      "Write a logic to detect a cycle in a Directed Acyclic Graph (DAG)."
+    ]
+  },
+  "bloomberg": {
+    "name": "Bloomberg",
+    "domain": "bloomberg.com",
+    "focus": "C++ performance, real-time data streaming, memory optimization, data structures (heaps, trees).",
+    "sampleQuestions": [
+      "Design a system that tracks the top 10 most actively traded stocks in real-time.",
+      "Explain the difference between a pointer and a reference in C++. What are smart pointers?",
+      "How would you implement an LRU cache? Write the data structure definitions."
+    ]
+  },
+  "atlassian": {
+    "name": "Atlassian",
+    "domain": "atlassian.com",
+    "focus": "System design (collaboration tools), React frontend complexity, graph databases, API rate limiting.",
+    "sampleQuestions": [
+      "Design a real-time collaborative issue tracker like Jira. How do you resolve merge conflicts on simultaneous edits?",
+      "How would you optimize a React application that renders a Kanban board with 10,000 draggable tickets?",
+      "Explain the CAP theorem and how it applies to a globally distributed database."
+    ]
+  },
+  "sap": {
+    "name": "SAP",
+    "domain": "sap.com",
+    "focus": "Enterprise resource planning (ERP) architectures, cloud migrations, database HANA optimizations, Java/ABAP.",
+    "sampleQuestions": [
+      "Explain the advantages of an in-memory database like SAP HANA over traditional disk-based relational databases.",
+      "How would you design a scalable microservice architecture for generating complex financial reports?",
+      "What is the OData protocol and how does it compare to GraphQL for querying enterprise data?"
+    ]
+  },
+  "vmware": {
+    "name": "VMware",
+    "domain": "vmware.com",
+    "focus": "Virtualization internals, Linux kernel fundamentals, distributed storage, and networking.",
+    "sampleQuestions": [
+      "Explain the concept of hypervisors (Type 1 vs Type 2) and how they manage hardware resources.",
+      "How would you design a distributed file system that guarantees high availability and fault tolerance?",
+      "What is the difference between a hard link and a soft link in Unix file systems?"
+    ]
+  },
+  "intuit": {
+    "name": "Intuit",
+    "domain": "intuit.com",
+    "focus": "Fintech scale, robust backend APIs, frontend component design, secure data pipelines.",
+    "sampleQuestions": [
+      "Design a tax calculation engine that needs to process 10 million user filings securely on April 15th.",
+      "How do you manage global state in a complex React application? Compare Context API, Redux, and Zustand.",
+      "What are the best practices for logging and monitoring microservices using tools like Splunk or ELK?"
+    ]
+  },
+  "spotify": {
+    "name": "Spotify",
+    "domain": "spotify.com",
+    "focus": "Audio streaming optimizations, offline sync, recommendation algorithms, massive big data pipelines.",
+    "sampleQuestions": [
+      "How would you design the backend for Spotify's Discover Weekly playlist generation?",
+      "Explain how you would synchronize offline downloaded songs with the server to ensure DRM compliance.",
+      "What algorithms are commonly used for collaborative filtering in recommendation systems?"
+    ]
+  },
+  "twitter": {
+    "name": "X (Twitter)",
+    "domain": "x.com",
+    "focus": "Massive fan-out architectures, caching (Redis/Memcached), message queues, high read/write volume.",
+    "sampleQuestions": [
+      "Explain the 'fan-out' problem in social media. How do you push a celebrity's tweet to 100 million followers instantly?",
+      "Design a trending hashtag system that updates every 5 seconds globally.",
+      "How does Redis handle memory eviction when the cache is full? What policies exist?"
+    ]
+  },
+  "sony": {
+    "name": "Sony",
+    "domain": "sony.com",
+    "focus": "Game console operating systems, graphics APIs, hardware/software integration, embedded C++.",
+    "sampleQuestions": [
+      "Explain the rendering pipeline in modern 3D graphics (Vertex processing to rasterization).",
+      "How do you implement a lock-free queue in C++ for multithreaded game engine architectures?",
+      "What are memory alignment and padding, and why are they critical in hardware-level programming?"
+    ]
+  },
+  "samsung": {
+    "name": "Samsung",
+    "domain": "samsung.com",
+    "focus": "Android OS internals, embedded systems, battery optimization, and IoT device connectivity.",
+    "sampleQuestions": [
+      "Explain the Android boot process from hardware power-on to the launcher screen.",
+      "How would you optimize a mobile application to minimize wake-locks and save battery life?",
+      "Design a protocol for low-latency communication between a smart TV and a mobile app over local Wi-Fi."
+    ]
+  },
+  "siemens": {
+    "name": "Siemens",
+    "domain": "siemens.com",
+    "focus": "Industrial IoT, SCADA systems, C/C++ embedded programming, safety-critical software.",
+    "sampleQuestions": [
+      "How do you ensure memory safety and prevent buffer overflows in a safety-critical C application?",
+      "Explain the publish-subscribe messaging pattern and how MQTT works in an IoT environment.",
+      "What are the challenges of performing over-the-air (OTA) firmware updates on industrial devices?"
+    ]
+  },
+  "flipkart": {
+    "name": "Flipkart",
+    "domain": "flipkart.com",
+    "focus": "E-commerce scale, search relevancy, supply chain algorithms, microservices.",
+    "sampleQuestions": [
+      "Design the backend architecture for Flipkart's 'Big Billion Days' sale. How do you prevent website crashes?",
+      "How would you implement a type-ahead search suggestion system using Elasticsearch?",
+      "Write an algorithm to find the shortest delivery route for a driver delivering packages to 10 locations (TSP)."
+    ]
+  },
+  "zomato": {
+    "name": "Zomato",
+    "domain": "zomato.com",
+    "focus": "Real-time tracking, geospatial indexing, restaurant catalog caching, high read-write traffic.",
+    "sampleQuestions": [
+      "Design a real-time order tracking system. How do the delivery partner's location updates reach the user's app?",
+      "How do you handle pagination and sorting for a database query returning thousands of restaurants based on user location?",
+      "Explain the architecture of a robust notification system using Firebase Cloud Messaging (FCM)."
+    ]
+  },
+  "swiggy": {
+    "name": "Swiggy",
+    "domain": "swiggy.com",
+    "focus": "Hyperlocal delivery algorithms, geohashing, order assignment heuristics, peak load handling.",
+    "sampleQuestions": [
+      "How would you design a system to match delivery partners with incoming food orders efficiently?",
+      "Explain how Geohashing works and how it is used for proximity searches in a database.",
+      "What is circuit breaking in microservices? How does it prevent cascading failures during a massive surge in orders?"
+    ]
+  },
+  "amd": {
+    "name": "AMD",
+    "domain": "amd.com",
+    "focus": "Processor architecture, Verilog/VHDL, compiler optimization, C++ hardware simulation.",
+    "sampleQuestions": [
+      "Explain the concept of Out-of-Order execution in modern microprocessors.",
+      "How do you optimize a compiler to take advantage of vector instructions (SIMD)?",
+      "Describe the difference between an ASIC and an FPGA in terms of design flow and performance tradeoffs."
+    ]
+  },
+  "qualcomm": {
+    "name": "Qualcomm",
+    "domain": "qualcomm.com",
+    "focus": "Wireless protocols (5G/LTE), embedded C programming, digital signal processing (DSP), operating systems.",
+    "sampleQuestions": [
+      "Explain the OSI model specifically focusing on how the Data Link layer operates in a wireless environment.",
+      "Write a C program to implement a circular buffer for handling incoming network packets.",
+      "What are interrupts and how does an RTOS handle nested interrupts efficiently?"
     ]
   }
 }
