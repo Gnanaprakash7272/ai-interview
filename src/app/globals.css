@@ -375,34 +375,61 @@ p {
 }
 
 .feature-card {
-  padding: 32px;
+  padding: 36px 32px;
   text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(to right, transparent, var(--primary), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.feature-card:hover::before {
+  opacity: 1;
 }
 
 .feature-icon-box {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background: rgba(139, 92, 246, 0.08);
-  border: 1px solid rgba(139, 92, 246, 0.15);
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.02));
+  border: 1px solid rgba(139, 92, 246, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.1);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon-box {
+  transform: scale(1.05) translateY(-2px);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+  box-shadow: 0 6px 15px rgba(139, 92, 246, 0.15);
 }
 
 .feature-icon {
   color: var(--primary);
+  filter: drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2));
 }
 
 .feature-card h3 {
-  font-size: 18px;
-  margin-bottom: 12px;
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text-main);
 }
 
 .feature-card p {
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--text-muted);
 }
 
 .analytics-hook {
