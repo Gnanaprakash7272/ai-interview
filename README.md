@@ -65,7 +65,7 @@ With a sleek **Dark Mode** user interface, **Real-Time Speech Recognition**, and
 
 Check out the live web application here:
 
-**🔗 [Access Mockora.ai Live](YOUR_HOSTING_LINK_HERE)**
+**🔗 [Access Mockora.ai Live](https://main.d1s7w4tg5h6ai1.amplifyapp.com/)**
 
 *(Note: Ensure you access the web app via `https://` to allow camera and microphone permissions).*
 
