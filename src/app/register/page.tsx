@@ -50,9 +50,7 @@ export default function Register() {
       
       <div className="auth-card glass-card">
         <div className="auth-header">
-          <div className="auth-logo-badge" style={{ background: "transparent", border: "none", boxShadow: "none", width: 72, height: 72 }}>
-            <Image src="/logo.png" alt="Mockora Logo" width={72} height={72} className="auth-logo-image" />
-          </div>
+          <Image src="/logo.png" alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
           <h1>Create Account</h1>
           <p>Begin your AI-powered interview prep today</p>
         </div>
@@ -188,11 +186,6 @@ export default function Register() {
           justify-content: center;
           margin: 0 auto 16px auto;
           box-shadow: var(--shadow-sm);
-        }
-
-        .auth-logo-image {
-          border-radius: 12px;
-          object-fit: contain;
         }
 
         .auth-header h1 {

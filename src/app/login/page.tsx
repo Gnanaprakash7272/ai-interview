@@ -55,9 +55,7 @@ function LoginForm() {
   return (
     <div className="auth-card glass-card">
       <div className="auth-header">
-        <div className="auth-logo-badge" style={{ background: "transparent", border: "none", boxShadow: "none", width: 72, height: 72 }}>
-          <Image src="/logo.png" alt="Mockora Logo" width={72} height={72} className="auth-logo-image" />
-        </div>
+        <Image src="/logo.png" alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
         <h1>Welcome Back</h1>
         <p>Log in to resume your technical preparation</p>
       </div>
@@ -174,11 +172,6 @@ function LoginForm() {
           justify-content: center;
           margin: 0 auto 16px auto;
           box-shadow: var(--shadow-sm);
-        }
-
-        .auth-logo-image {
-          border-radius: 12px;
-          object-fit: contain;
         }
 
         .auth-header h1 {
