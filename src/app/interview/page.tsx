@@ -17,6 +17,8 @@ import {
   Send,
   Bot
 } from "lucide-react";
+import Image from "next/image";
+import AIAvatar from "@/assets/ai-avatar.png";
 
 interface QuestionItem {
   id: string;
@@ -59,6 +61,7 @@ function InterviewRoomContent() {
   const [isRecording, setIsRecording] = useState(false);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState("");
   const [isMuted, setIsMuted] = useState(false);
   
   // Timer states
@@ -121,13 +124,19 @@ function InterviewRoomContent() {
     let stream: MediaStream | null = null;
     const startCamera = async () => {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("Camera requires HTTPS or localhost.");
+        }
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          // Explicitly try to play the video to ensure it starts
+          videoRef.current.play().catch(e => console.error("Video play failed:", e));
         }
         setCameraActive(true);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Camera access denied", err);
+        setCameraError(err.message || "Camera access denied or missing permissions");
       }
     };
     if (!loading && !error) {
@@ -384,8 +393,8 @@ function InterviewRoomContent() {
               </div>
               
               <div className="ai-center-visual">
-                <div className={`ai-cpu-icon ${isAiSpeaking ? 'speaking' : ''}`}>
-                  <Cpu size={32} />
+                <div className={`ai-avatar-circle ${isAiSpeaking ? 'speaking' : ''}`}>
+                  <Image src={AIAvatar} alt="AI Recruiter Avatar" className="ai-avatar-img" />
                 </div>
                 <div className={`waveform-visualizer ${isAiSpeaking ? 'active' : ''}`}>
                   <svg viewBox="0 0 200 40" className="waveform-svg">
@@ -414,10 +423,20 @@ function InterviewRoomContent() {
                 </div>
               </div>
 
-              {!cameraActive && (
+              {!cameraActive && !cameraError && (
                 <div className="camera-placeholder">
                    <Loader2 size={24} className="animate-spin" />
                    <p>Starting Camera...</p>
+                </div>
+              )}
+              
+              {cameraError && (
+                <div className="camera-placeholder" style={{ color: '#ef4444' }}>
+                   <AlertCircle size={32} />
+                   <p style={{ fontWeight: 600 }}>{cameraError}</p>
+                   <p style={{ fontSize: 12, opacity: 0.8, textAlign: 'center', padding: '0 20px' }}>
+                     Please allow camera permissions or ensure you are using a secure connection (HTTPS / localhost).
+                   </p>
                 </div>
               )}
               
@@ -556,14 +575,20 @@ function InterviewRoomContent() {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           gap: 20px; transform: translateY(-20px);
         }
-        .ai-cpu-icon {
-          width: 80px; height: 80px; border-radius: 50%; border: 2px solid rgba(139, 92, 246, 0.3);
-          display: flex; align-items: center; justify-content: center; color: #a78bfa;
+        .ai-avatar-circle {
+          width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(139, 92, 246, 0.3);
+          display: flex; align-items: center; justify-content: center;
           background: rgba(139, 92, 246, 0.1); transition: all 0.3s;
+          overflow: hidden;
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
-        .ai-cpu-icon.speaking {
-          border-color: #a78bfa; color: white;
-          box-shadow: 0 0 30px rgba(139, 92, 246, 0.6), inset 0 0 20px rgba(139, 92, 246, 0.4);
+        .ai-avatar-circle.speaking {
+          border-color: #a78bfa;
+          box-shadow: 0 0 40px rgba(139, 92, 246, 0.6), inset 0 0 20px rgba(139, 92, 246, 0.4);
+          transform: scale(1.05);
+        }
+        .ai-avatar-img {
+          width: 100%; height: 100%; object-fit: cover;
         }
 
         .waveform-visualizer { width: 240px; height: 40px; opacity: 0.3; transition: opacity 0.3s; }
