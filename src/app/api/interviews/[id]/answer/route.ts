@@ -56,9 +56,16 @@ export async function POST(
     currentResponse.duration = duration || 0;
     currentResponse.speakingSpeed = speakingSpeed || 0;
     currentResponse.hesitationCount = hesitationCount || 0;
+    currentResponse.grammarScore = evaluation.grammarScore || 0;
+    currentResponse.clarityScore = evaluation.clarityScore || 0;
+    currentResponse.problemSolvingScore = evaluation.problemSolvingScore || 0;
+    currentResponse.hiringRecommendation = evaluation.hiringRecommendation || "Weak Hire";
+    currentResponse.round = evaluation.round || "Technical Round";
+    currentResponse.expectedAnswer = evaluation.expectedAnswer || "";
     currentResponse.strengths = evaluation.strengths;
     currentResponse.weaknesses = evaluation.weaknesses;
     currentResponse.missingConcepts = evaluation.missingConcepts;
+    currentResponse.suggestions = evaluation.suggestions || [];
     currentResponse.improvedAnswer = evaluation.improvedAnswer;
     await currentResponse.save();
 

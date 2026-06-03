@@ -178,9 +178,11 @@ ${historyText}
 Generate the NEXT conversational follow-up question.
 Guidelines:
 1. Address ${candidateName || "the candidate"} by name occasionally to keep it natural.
-2. Read the candidate's last answer. If they provided a vague or incomplete answer, ask a follow-up digging deeper into their technical choice or explanation.
-3. Keep the conversation extremely natural, like a real human recruiter.
-4. Output ONLY the final spoken recruiter question. Do not include any tags, markdown, or JSON.`;
+2. CRITICAL: Read the candidate's last answer closely. If they ask to "repeat the question", or say they don't understand, DO NOT move on. Simply repeat your previous question in a slightly simplified way.
+3. If they gave a vague or incomplete answer, ask a follow-up digging deeper into their technical choice or explanation.
+4. If they answered well, move on to the next related technical topic or increase difficulty.
+5. Keep the conversation extremely natural, strict, and professional like a real human recruiter.
+6. Output ONLY the final spoken recruiter question. Do not include any tags, markdown, or JSON.`;
       }
 
       const response = await ai.models.generateContent({
@@ -277,14 +279,19 @@ Evaluation Criteria:
 6. Clarity Score (0-10): How clearly the candidate communicated their answer.
 7. Problem Solving Score (0-10): Analytical thinking, approach structure, and solution quality.
 
+CRITICAL RULES:
+- If the candidate's answer is irrelevant, gibberish, very short, or simply asks to "repeat the question", you MUST score Technical Accuracy as 0, Problem Solving as 0, and note this in weaknesses.
+- Do NOT generate generic "A strong answer would define the concept..." text. Write a SPECIFIC, highly technical expected answer for the EXACT question asked.
+- The improvedAnswer MUST be a highly professional, technically deep rewrite of the candidate's attempt. If they didn't attempt it, write a strong first-person answer they COULD have used.
+
 Based on the evaluation, determine the interview Round (e.g., "Technical Round 1", "HR Round", "System Design Round").
 
 Provide:
-- strengths: at least 2 specific positive points
+- strengths: at least 2 specific positive points (if they failed completely, put "None")
 - weaknesses: at least 2 specific areas to improve
 - suggestions: at least 2 actionable improvement tips
-- missingConcepts: concepts the candidate failed to mention
-- expectedAnswer: what a strong interview answer to this question would look like (2-4 sentences, written as expert reference)
+- missingConcepts: specific technical keywords they failed to mention
+- expectedAnswer: SPECIFIC technical answer to the exact question (2-4 sentences, written as expert reference)
 - improvedAnswer: rewrite the candidate's answer in a professional first-person developer tone in the target language
 
 Also determine hiringRecommendation based on overall performance:
