@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { ArrowRight, Bot, ShieldCheck, BarChart4, Speech, Terminal } from "lucide-react";
+import { ArrowRight, Bot, ShieldCheck, TrendingUp, Speech, Terminal } from "lucide-react";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -87,7 +87,7 @@ export default async function Home() {
         <div className="glass-card hook-banner">
           <div className="hook-content">
             <div className="hook-badge">
-              <BarChart4 size={18} />
+              <TrendingUp size={18} />
               <span>Advanced Analytics Engine</span>
             </div>
             <h2>Track Your Trajectory Over Time</h2>
