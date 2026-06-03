@@ -75,6 +75,7 @@ export async function POST(req: Request) {
       language || "en",
       [], // No history yet
       resumeText || "",
+      jobDescriptionText || "",
       targetCompany || "general",
       candidateName || "Candidate",
       skillsArray,

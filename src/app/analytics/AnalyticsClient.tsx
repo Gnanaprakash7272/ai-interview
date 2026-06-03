@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { Download, Award, Target, Activity, MessageSquare, Briefcase, ChevronRight, FileText } from "lucide-react";
+import { Download, Award, Target, Activity, MessageSquare, Briefcase, ChevronRight, FileText, AlertCircle } from "lucide-react";
 
 export default function AnalyticsClient({ radarData, trendData, analytics, interviews }: any) {
 
