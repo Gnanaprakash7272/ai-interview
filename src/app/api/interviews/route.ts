@@ -22,7 +22,11 @@ export async function POST(req: Request) {
       questionCount, 
       resumeText, 
       jobDescriptionText,
-      targetCompany
+      targetCompany,
+      // New candidate profile fields
+      candidateName,
+      skills,
+      experienceLevel
     } = await req.json();
 
     if (!domain || !difficulty) {
@@ -32,10 +36,17 @@ export async function POST(req: Request) {
     const count = parseInt(questionCount) || 3;
     const userId = (session.user as any).id;
 
+    // Parse skills: accept both string (comma-separated) and array
+    const skillsArray: string[] = Array.isArray(skills)
+      ? skills
+      : (typeof skills === "string" && skills.trim())
+        ? skills.split(",").map((s: string) => s.trim()).filter(Boolean)
+        : [];
+
     // 1. Create Interview session document with metadata
     const newInterview = await Interview.create({
       userId,
-      domain, // Stores Job Role
+      domain,
       difficulty,
       interviewType: interviewType || "technical",
       language: language || "en",
@@ -48,11 +59,15 @@ export async function POST(req: Request) {
       totalScore: 0,
       confidenceScore: 0,
       fluencyScore: 0,
+      // New candidate profile
+      candidateName: candidateName || "Candidate",
+      skills: skillsArray,
+      experienceLevel: experienceLevel || difficulty,
       recommendations: [],
       careerGuidance: {}
     });
 
-    // 2. Generate the first recruiter welcome + question dynamically
+    // 2. Generate the first recruiter welcome + question dynamically (personalized)
     const firstQuestion = await generateNextConversationalQuestion(
       domain,
       difficulty,
@@ -61,7 +76,10 @@ export async function POST(req: Request) {
       [], // No history yet
       resumeText || "",
       jobDescriptionText || "",
-      targetCompany || "general"
+      targetCompany || "general",
+      candidateName || "Candidate",
+      skillsArray,
+      experienceLevel || difficulty
     );
 
     // 3. Create the first Response record for the interview
@@ -74,12 +92,19 @@ export async function POST(req: Request) {
       communication: 0,
       confidence: 0,
       fluency: 0,
+      grammarScore: 0,
+      clarityScore: 0,
+      problemSolvingScore: 0,
+      hiringRecommendation: "Weak Hire",
+      round: "Technical Round",
       duration: 0,
       speakingSpeed: 0,
       hesitationCount: 0,
       strengths: [],
       weaknesses: [],
+      suggestions: [],
       missingConcepts: [],
+      expectedAnswer: "",
       improvedAnswer: ""
     });
 
@@ -94,4 +119,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
-

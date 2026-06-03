@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
   ChevronDown, ChevronUp, CheckCircle, AlertTriangle, ArrowLeft, Loader2, 
-  RefreshCw, Star, Info, MessageSquareCode, Award, Compass, BookOpen, Clock, BarChart2 
+  RefreshCw, Star, Info, MessageSquareCode, Award, Compass, BookOpen, Clock, BarChart2,
+  ThumbsUp, ThumbsDown, Lightbulb, Target, FileCheck, Briefcase
 } from "lucide-react";
 
 interface ResponseFeedback {
@@ -17,20 +18,74 @@ interface ResponseFeedback {
   communication: number;
   confidence: number;
   fluency: number;
+  // New sub-scores
+  grammarScore: number;
+  clarityScore: number;
+  problemSolvingScore: number;
+  // Verdict fields
+  hiringRecommendation: "Strong Hire" | "Hire" | "Weak Hire" | "Reject";
+  round: string;
+  expectedAnswer: string;
+  // Voice metrics
   duration: number;
   speakingSpeed: number;
   hesitationCount: number;
+  // Qualitative
   strengths: string[];
   weaknesses: string[];
+  suggestions: string[];
   missingConcepts: string[];
   improvedAnswer: string;
 }
+
+interface HiringBadgeConfig {
+  label: string;
+  color: string;
+  bg: string;
+  border: string;
+  emoji: string;
+  desc: string;
+}
+
+const HIRING_CONFIG: Record<string, HiringBadgeConfig> = {
+  "Strong Hire": {
+    label: "Strong Hire",
+    color: "#059669",
+    bg: "rgba(5, 150, 105, 0.1)",
+    border: "rgba(5, 150, 105, 0.3)",
+    emoji: "🌟",
+    desc: "Exceptional performance. Highly recommended for the role."
+  },
+  "Hire": {
+    label: "Hire",
+    color: "#2563eb",
+    bg: "rgba(37, 99, 235, 0.1)",
+    border: "rgba(37, 99, 235, 0.3)",
+    emoji: "✅",
+    desc: "Good performance with minor gaps. Recommended for the role."
+  },
+  "Weak Hire": {
+    label: "Weak Hire",
+    color: "#d97706",
+    bg: "rgba(217, 119, 6, 0.1)",
+    border: "rgba(217, 119, 6, 0.3)",
+    emoji: "⚠️",
+    desc: "Average performance. Conditional hire with coaching recommended."
+  },
+  "Reject": {
+    label: "Reject",
+    color: "#dc2626",
+    bg: "rgba(220, 38, 38, 0.1)",
+    border: "rgba(220, 38, 38, 0.3)",
+    emoji: "❌",
+    desc: "Significant gaps in knowledge and communication. Not recommended."
+  }
+};
 
 export default function InterviewFeedback({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id: interviewId } = use(params);
 
-  // States
   const [interview, setInterview] = useState<any>(null);
   const [responses, setResponses] = useState<ResponseFeedback[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +105,6 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         setInterview(data.interview);
         setResponses(data.responses);
         
-        // Expand first response by default
         if (data.responses && data.responses.length > 0) {
           setExpandedResponse(data.responses[0]._id);
         }
@@ -79,7 +133,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         <div className="app-bg-glow"></div>
         <div className="loading-card glass-card">
           <Loader2 className="animate-spin primary-color" size={40} />
-          <p>Compiling mock recruiter evaluations and custom roadmaps...</p>
+          <p>Compiling AI evaluation report and career roadmap...</p>
         </div>
         <style jsx>{`
           .center-wrapper { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 100px); }
@@ -116,13 +170,21 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
   const avgComm = Math.round(responses.reduce((sum, r) => sum + r.communication, 0) / responses.length) || 0;
   const avgConf = Math.round(responses.reduce((sum, r) => sum + (r.confidence || 0), 0) / responses.length) || 0;
   const avgFlue = Math.round(responses.reduce((sum, r) => sum + (r.fluency || 0), 0) / responses.length) || 0;
+  const avgGrammar = parseFloat((responses.reduce((sum, r) => sum + (r.grammarScore || 0), 0) / responses.length).toFixed(1)) || 0;
+  const avgClarity = parseFloat((responses.reduce((sum, r) => sum + (r.clarityScore || 0), 0) / responses.length).toFixed(1)) || 0;
+  const avgProblem = parseFloat((responses.reduce((sum, r) => sum + (r.problemSolvingScore || 0), 0) / responses.length).toFixed(1)) || 0;
 
-  // Recruiter speech metrics
+  // Voice metrics
   const avgDuration = Math.round(responses.reduce((sum, r) => sum + (r.duration || 0), 0) / responses.length) || 0;
   const avgWpm = Math.round(responses.reduce((sum, r) => sum + (r.speakingSpeed || 0), 0) / responses.length) || 0;
   const totalHesitations = responses.reduce((sum, r) => sum + (r.hesitationCount || 0), 0);
 
-  // SVG parameters for overall ring
+  // Overall hiring recommendation from interview doc, fallback to computing from responses
+  const overallHiring: string = interview?.overallHiringRecommendation ||
+    (totalScore >= 85 ? "Strong Hire" : totalScore >= 70 ? "Hire" : totalScore >= 55 ? "Weak Hire" : "Reject");
+  const hiringConfig = HIRING_CONFIG[overallHiring] || HIRING_CONFIG["Weak Hire"];
+
+  // SVG ring
   const radius = 60;
   const strokeWidth = 10;
   const circumference = 2 * Math.PI * radius;
@@ -143,10 +205,67 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         <div className="header-meta">
           <h1>AI Recruiter Feedback</h1>
           <p>
-            Detailed performance scorecard for your <span className="highlight-text">{interview?.domain.replace("_", " ")}</span> session
+            Detailed performance scorecard for your <span className="highlight-text">{interview?.domain?.replace(/_/g, " ")}</span> session
+            {interview?.candidateName && interview.candidateName !== "Candidate" && (
+              <> — <span className="highlight-text">{interview.candidateName}</span></>
+            )}
           </p>
         </div>
       </header>
+
+      {/* ─── HIRING RECOMMENDATION BANNER ─── */}
+      <section
+        className="hiring-banner animate-fade-in"
+        style={{
+          background: hiringConfig.bg,
+          border: `1px solid ${hiringConfig.border}`,
+        }}
+      >
+        <div className="hiring-left">
+          <div className="hiring-emoji">{hiringConfig.emoji}</div>
+          <div className="hiring-text">
+            <span className="hiring-label" style={{ color: hiringConfig.color }}>
+              AI Verdict: {hiringConfig.label}
+            </span>
+            <p className="hiring-desc">{hiringConfig.desc}</p>
+          </div>
+        </div>
+        <div className="hiring-score-badge" style={{ color: hiringConfig.color, borderColor: hiringConfig.border }}>
+          <span className="hiring-score-num">{totalScore}%</span>
+          <span className="hiring-score-label">Overall Score</span>
+        </div>
+      </section>
+
+      {/* Candidate Profile Summary (if set) */}
+      {interview?.candidateName && interview.candidateName !== "Candidate" && (
+        <section className="candidate-summary glass-card">
+          <div className="candidate-summary-row">
+            <div className="cand-item">
+              <Briefcase size={14} className="primary-color" />
+              <span className="cand-label">Role:</span>
+              <span className="cand-value">{interview?.domain?.replace(/_/g, " ")}</span>
+            </div>
+            {interview?.experienceLevel && (
+              <div className="cand-item">
+                <Star size={14} className="primary-color" />
+                <span className="cand-label">Level:</span>
+                <span className="cand-value cand-capitalize">{interview.experienceLevel.replace(/_/g, " ")}</span>
+              </div>
+            )}
+            {interview?.skills && interview.skills.length > 0 && (
+              <div className="cand-item cand-skills">
+                <Target size={14} className="primary-color" />
+                <span className="cand-label">Skills:</span>
+                <div className="skill-chips">
+                  {interview.skills.slice(0, 6).map((skill: string, i: number) => (
+                    <span key={i} className="skill-chip">{skill}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Overview Block */}
       <section className="overview-row">
@@ -185,7 +304,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           <div className="ring-meta">
             <h3>Recruiter Verdict</h3>
             <p>
-              Your voice responses scored an overall {totalScore}%. {totalScore >= 80 ? "You displayed excellent command of technical concepts and high clarity." : totalScore >= 60 ? "Solid base concepts with minor gaps in architectural depth and speech fluency." : "Significant gaps in conceptual definitions and structure. Practice regular mock tests."}
+              Your responses scored an overall {totalScore}%. {totalScore >= 80 ? "Excellent command of technical concepts and high clarity." : totalScore >= 60 ? "Solid base with minor gaps in depth and fluency." : "Significant gaps in conceptual definitions. Practice more mock tests."}
             </p>
           </div>
         </div>
@@ -193,7 +312,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         {/* Breakdown scores card */}
         <div className="glass-card breakdown-card">
           <h3>Evaluation Breakdown</h3>
-          <p>Divided across technical depth, behavior, and speaking metrics</p>
+          <p>Core dimensions scored across all responses</p>
           
           <div className="breakdown-stack">
             <div className="breakdown-item">
@@ -239,10 +358,39 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         </div>
       </section>
 
-      {/* Recruiter Speech Metrics Section */}
+      {/* ─── NEW: Granular Sub-Score Panel (0-10) ─── */}
+      <section className="sub-scores-panel glass-card">
+        <h3>Granular Interview Scores <span className="sub-score-scale">(out of 10)</span></h3>
+        <p className="sub-desc">Detailed dimension scoring computed per answer by the AI evaluator</p>
+        <div className="sub-score-trio">
+          <div className="sub-score-item">
+            <div className="sub-score-circle" style={{ "--pct": `${(avgGrammar / 10) * 100}%` } as any}>
+              <span className="sub-score-val">{avgGrammar}</span>
+              <span className="sub-score-unit">/10</span>
+            </div>
+            <p>Grammar Score</p>
+          </div>
+          <div className="sub-score-item">
+            <div className="sub-score-circle" style={{ "--pct": `${(avgClarity / 10) * 100}%` } as any}>
+              <span className="sub-score-val">{avgClarity}</span>
+              <span className="sub-score-unit">/10</span>
+            </div>
+            <p>Clarity Score</p>
+          </div>
+          <div className="sub-score-item">
+            <div className="sub-score-circle" style={{ "--pct": `${(avgProblem / 10) * 100}%` } as any}>
+              <span className="sub-score-val">{avgProblem}</span>
+              <span className="sub-score-unit">/10</span>
+            </div>
+            <p>Problem Solving</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Voice Analytics */}
       <section className="speech-metrics-row glass-card">
-        <h3>Recruiter Voice Analytics</h3>
-        <p className="metrics-intro">Speaking speed, speech duration, and filler hesitations measured during live microphone capture.</p>
+        <h3>Voice Analytics</h3>
+        <p className="metrics-intro">Speaking speed, duration, and filler hesitations measured during the session.</p>
         
         <div className="metrics-grid">
           <div className="metric-box">
@@ -257,15 +405,15 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
             <BarChart2 size={20} className="info-color" />
             <div className="metric-info">
               <h4>Speaking Speed</h4>
-              <p>{avgWpm} WPM (Words/Min)</p>
+              <p>{avgWpm} WPM</p>
             </div>
           </div>
 
           <div className="metric-box">
             <AlertTriangle size={20} className="warning-color" />
             <div className="metric-info">
-              <h4>Total Fillers / Hesitations</h4>
-              <p>{totalHesitations} Fillers (umm, aaa, etc.)</p>
+              <h4>Total Filler Words</h4>
+              <p>{totalHesitations} Fillers</p>
             </div>
           </div>
         </div>
@@ -273,12 +421,14 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
 
       {/* Accordion Questions Audit */}
       <section className="audit-section">
-        <h2>Detailed Conversational Audit</h2>
-        <p className="section-desc">Click each conversational node to review granular AI evaluations, speech details, and ideal answers.</p>
+        <h2>Detailed Question-by-Question Audit</h2>
+        <p className="section-desc">Click each question to review AI evaluation, expected answers, and personalized suggestions.</p>
         
         <div className="audit-list">
           {responses.map((resDoc, idx) => {
             const isExpanded = expandedResponse === resDoc._id;
+            const qHiring = resDoc.hiringRecommendation || "Weak Hire";
+            const qConfig = HIRING_CONFIG[qHiring] || HIRING_CONFIG["Weak Hire"];
             return (
               <div key={resDoc._id} className="audit-item-wrapper glass-card">
                 {/* Accordion Trigger */}
@@ -288,9 +438,18 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
                 >
                   <div className="trigger-left">
                     <span className="question-number-badge">Q{idx + 1}</span>
+                    {resDoc.round && (
+                      <span className="round-badge">{resDoc.round}</span>
+                    )}
                     <span className="trigger-question-text">{resDoc.question}</span>
                   </div>
                   <div className="trigger-right">
+                    <span 
+                      className="q-hiring-badge"
+                      style={{ background: qConfig.bg, color: qConfig.color, border: `1px solid ${qConfig.border}` }}
+                    >
+                      {qConfig.emoji} {qConfig.label}
+                    </span>
                     <span className={`trigger-score-badge ${getScoreColorClass(resDoc.score)}`}>
                       {resDoc.score}%
                     </span>
@@ -302,17 +461,17 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
                 {isExpanded && (
                   <div className="audit-details animate-fade-in">
                     
-                    {/* Specific Voice stats */}
+                    {/* Voice stats */}
                     <div className="response-voice-row">
                       <span>Speaking Speed: <strong>{resDoc.speakingSpeed} WPM</strong></span>
                       <span>Duration: <strong>{resDoc.duration} Seconds</strong></span>
                       <span>Hesitations: <strong>{resDoc.hesitationCount}</strong></span>
                     </div>
 
-                    {/* Scores row */}
+                    {/* Sub Scores Row (0-100 + 0-10) */}
                     <div className="sub-scores-row">
                       <div className="sub-score-badge">
-                        <span>Technical Accuracy:</span>
+                        <span>Technical:</span>
                         <strong className="primary-color">{resDoc.technicalAccuracy}%</strong>
                       </div>
                       <div className="sub-score-badge">
@@ -327,33 +486,53 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
                         <span>Fluency:</span>
                         <strong className="success-color">{resDoc.fluency || 0}%</strong>
                       </div>
+                      <div className="sub-score-badge">
+                        <span>Grammar:</span>
+                        <strong className="primary-color">{resDoc.grammarScore || 0}/10</strong>
+                      </div>
+                      <div className="sub-score-badge">
+                        <span>Clarity:</span>
+                        <strong className="info-color">{resDoc.clarityScore || 0}/10</strong>
+                      </div>
+                      <div className="sub-score-badge">
+                        <span>Problem Solving:</span>
+                        <strong className="success-color">{resDoc.problemSolvingScore || 0}/10</strong>
+                      </div>
                     </div>
 
-                    {/* Answer Grid */}
-                    <div className="audit-answers-grid">
+                    {/* ─── Answer Comparison Grid (3 columns) ─── */}
+                    <div className="audit-answers-grid-3">
                       <div className="answer-box user-answer">
-                        <h4>Your Recorded Speech Answer</h4>
-                        <p>{resDoc.answer || <em className="text-dark">Silent / No response recorded.</em>}</p>
+                        <h4>Your Answer</h4>
+                        <p>{resDoc.answer || <em className="text-dark">No response recorded.</em>}</p>
+                      </div>
+
+                      <div className="answer-box expected-answer">
+                        <div className="ideal-title-row">
+                          <FileCheck size={16} className="info-color" />
+                          <h4>Expected Answer</h4>
+                        </div>
+                        <p>{resDoc.expectedAnswer || "A strong answer would clearly define the concept, explain its implementation, and discuss trade-offs with a real-world example."}</p>
                       </div>
 
                       <div className="answer-box ideal-answer">
                         <div className="ideal-title-row">
                           <MessageSquareCode size={16} className="primary-color" />
-                          <h4>AI Recommended Phrasing</h4>
+                          <h4>AI Improved Answer</h4>
                         </div>
                         <p>{resDoc.improvedAnswer}</p>
                       </div>
                     </div>
 
-                    {/* Bullet analysis */}
-                    <div className="analysis-grid">
+                    {/* Analysis Grid: Strengths + Weaknesses + Suggestions */}
+                    <div className="analysis-grid-3">
                       <div className="analysis-box strengths-box">
                         <div className="box-title">
                           <CheckCircle size={16} className="success-color" />
-                          <h5>Recruiter Positives</h5>
+                          <h5>Strengths</h5>
                         </div>
                         <ul>
-                          {resDoc.strengths.map((str, sIdx) => (
+                          {(resDoc.strengths || []).map((str, sIdx) => (
                             <li key={sIdx}>{str}</li>
                           ))}
                         </ul>
@@ -362,17 +541,32 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
                       <div className="analysis-box weaknesses-box">
                         <div className="box-title">
                           <AlertTriangle size={16} className="warning-color" />
-                          <h5>Recruiter Critiques</h5>
+                          <h5>Areas to Improve</h5>
                         </div>
                         <ul>
-                          {resDoc.weaknesses.map((weak, wIdx) => (
+                          {(resDoc.weaknesses || []).map((weak, wIdx) => (
                             <li key={wIdx}>{weak}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="analysis-box suggestions-box">
+                        <div className="box-title">
+                          <Lightbulb size={16} className="primary-color" />
+                          <h5>Suggestions</h5>
+                        </div>
+                        <ul>
+                          {(resDoc.suggestions && resDoc.suggestions.length > 0
+                            ? resDoc.suggestions
+                            : ["Structure your answer: Define → Explain → Example → Trade-offs.", "Practice speaking answers aloud to improve fluency."]
+                          ).map((sug, sgIdx) => (
+                            <li key={sgIdx}>{sug}</li>
                           ))}
                         </ul>
                       </div>
                     </div>
 
-                    {/* Missing Concepts block */}
+                    {/* Missing Concepts */}
                     {resDoc.missingConcepts && resDoc.missingConcepts.length > 0 && (
                       <div className="missing-concepts-panel">
                         <div className="box-title">
@@ -395,18 +589,16 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         </div>
       </section>
 
-      {/* AI Career Advice Roadmap Panel */}
+      {/* AI Career Advice Roadmap */}
       {careerGuidance && careerGuidance.skillsToLearn && (
         <section className="career-guidance-section glass-card">
           <div className="guidance-header">
             <Compass size={24} className="primary-color" />
             <h2>AI Career Guidance Advisor</h2>
           </div>
-          <p className="guidance-desc">Custom study roadmap created by the mock recruiter matching your experience flaws.</p>
+          <p className="guidance-desc">Custom study roadmap created based on your performance gaps.</p>
           
           <div className="guidance-grid-main">
-            
-            {/* Left Box: Skills and certs */}
             <div className="guidance-left-col">
               <div className="guidance-card-content">
                 <h4>Skills To Study</h4>
@@ -439,9 +631,8 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            {/* Right Box: Roadmap checkpoints */}
             <div className="guidance-right-col">
-              <h4>Recruiter Learning Roadmap</h4>
+              <h4>Learning Roadmap</h4>
               <div className="roadmap-timeline">
                 {careerGuidance.learningRoadmap.map((step: string, sIdx: number) => (
                   <div key={sIdx} className="timeline-node">
@@ -453,7 +644,6 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
                 ))}
               </div>
             </div>
-
           </div>
         </section>
       )}
@@ -462,7 +652,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
       <footer className="feedback-cta">
         <Link href="/interviews/new" className="btn btn-primary animate-pulse-glow">
           <RefreshCw size={16} />
-          <span>Practice Another Mock Recruiter</span>
+          <span>Start Another Mock Interview</span>
         </Link>
       </footer>
 
@@ -470,11 +660,11 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         .feedback-wrapper {
           padding-top: 30px;
           padding-bottom: 80px;
-          max-width: 1000px !important;
+          max-width: 1080px !important;
         }
 
         .feedback-header {
-          margin-bottom: 36px;
+          margin-bottom: 28px;
         }
 
         .back-link {
@@ -488,9 +678,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           transition: color 0.2s ease;
         }
 
-        .back-link:hover {
-          color: var(--text-main);
-        }
+        .back-link:hover { color: var(--text-main); }
 
         .header-meta h1 {
           font-size: 32px;
@@ -502,18 +690,138 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           text-transform: capitalize;
         }
 
+        /* ─── Hiring Banner ─── */
+        .hiring-banner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+          padding: 24px 28px;
+          border-radius: var(--radius-lg);
+          margin-bottom: 20px;
+          animation: fadeSlideIn 0.5s ease-out;
+        }
+
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hiring-left {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+        }
+
+        .hiring-emoji {
+          font-size: 36px;
+          line-height: 1;
+        }
+
+        .hiring-label {
+          display: block;
+          font-size: 22px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+          margin-bottom: 4px;
+        }
+
+        .hiring-desc {
+          font-size: 13px;
+          color: var(--text-muted);
+          line-height: 1.4;
+        }
+
+        .hiring-score-badge {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          border: 2px solid;
+          border-radius: var(--radius-md);
+          padding: 12px 24px;
+          flex-shrink: 0;
+        }
+
+        .hiring-score-num {
+          font-size: 32px;
+          font-weight: 900;
+          line-height: 1;
+        }
+
+        .hiring-score-label {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          opacity: 0.7;
+          margin-top: 2px;
+        }
+
+        @media (max-width: 600px) {
+          .hiring-banner { flex-direction: column; text-align: center; }
+          .hiring-left { flex-direction: column; }
+        }
+
+        /* ─── Candidate Summary ─── */
+        .candidate-summary {
+          padding: 16px 22px;
+          margin-bottom: 24px;
+        }
+
+        .candidate-summary-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+          align-items: center;
+        }
+
+        .cand-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+        }
+
+        .cand-label {
+          font-weight: 600;
+          color: var(--text-muted);
+        }
+
+        .cand-value {
+          color: var(--text-main);
+          font-weight: 500;
+        }
+
+        .cand-capitalize { text-transform: capitalize; }
+
+        .cand-skills { flex-wrap: wrap; }
+
+        .skill-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .skill-chip {
+          background: var(--primary-glow-subtle);
+          border: 1px solid rgba(139, 92, 246, 0.2);
+          color: var(--primary-hover);
+          padding: 2px 10px;
+          border-radius: 9999px;
+          font-size: 11px;
+          font-weight: 600;
+        }
+
         /* Overview Row */
         .overview-row {
           display: grid;
           grid-template-columns: 1fr 1.2fr;
           gap: 24px;
-          margin-bottom: 30px;
+          margin-bottom: 24px;
         }
 
         @media (max-width: 768px) {
-          .overview-row {
-            grid-template-columns: 1fr;
-          }
+          .overview-row { grid-template-columns: 1fr; }
         }
 
         .score-ring-card {
@@ -537,10 +845,8 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
 
         .ring-text-box {
           position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -560,15 +866,8 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           letter-spacing: 0.05em;
         }
 
-        .ring-meta h3 {
-          font-size: 18px;
-          margin-bottom: 8px;
-        }
-
-        .ring-meta p {
-          font-size: 13px;
-          line-height: 1.5;
-        }
+        .ring-meta h3 { font-size: 18px; margin-bottom: 8px; }
+        .ring-meta p { font-size: 13px; line-height: 1.5; }
 
         .breakdown-card {
           padding: 30px;
@@ -577,15 +876,8 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           justify-content: center;
         }
 
-        .breakdown-card h3 {
-          font-size: 18px;
-          margin-bottom: 6px;
-        }
-
-        .breakdown-card p {
-          font-size: 13px;
-          margin-bottom: 16px;
-        }
+        .breakdown-card h3 { font-size: 18px; margin-bottom: 6px; }
+        .breakdown-card p { font-size: 13px; margin-bottom: 16px; }
 
         .breakdown-stack {
           display: flex;
@@ -601,13 +893,8 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           margin-bottom: 4px;
         }
 
-        .dimension-name {
-          color: var(--text-muted);
-        }
-
-        .dimension-score {
-          font-weight: 700;
-        }
+        .dimension-name { color: var(--text-muted); }
+        .dimension-score { font-weight: 700; }
 
         .progress-bar-track {
           height: 6px;
@@ -616,25 +903,94 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           overflow: hidden;
         }
 
-        .progress-bar-fill {
-          height: 100%;
-          border-radius: 9999px;
+        .progress-bar-fill { height: 100%; border-radius: 9999px; }
+        .tech-fill { background: linear-gradient(to right, var(--primary), var(--primary-hover)); }
+        .comm-fill { background: linear-gradient(to right, var(--color-info), var(--primary-hover)); }
+        .conf-fill { background: linear-gradient(to right, var(--color-warning), var(--color-info)); }
+        .flue-fill { background: linear-gradient(to right, var(--color-success), var(--color-info)); }
+
+        /* ─── Sub Score Panel ─── */
+        .sub-scores-panel {
+          padding: 28px;
+          margin-bottom: 24px;
         }
 
-        .tech-fill {
-          background: linear-gradient(to right, var(--primary), var(--primary-hover));
+        .sub-scores-panel h3 {
+          font-size: 17px;
+          margin-bottom: 6px;
         }
 
-        .comm-fill {
-          background: linear-gradient(to right, var(--color-info), var(--primary-hover));
+        .sub-score-scale {
+          font-size: 13px;
+          font-weight: 400;
+          color: var(--text-muted);
         }
 
-        .conf-fill {
-          background: linear-gradient(to right, var(--color-warning), var(--color-info));
+        .sub-desc {
+          font-size: 13px;
+          color: var(--text-dark);
+          margin-bottom: 24px;
         }
 
-        .flue-fill {
-          background: linear-gradient(to right, var(--color-success), var(--color-info));
+        .sub-score-trio {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 24px;
+        }
+
+        @media (max-width: 600px) {
+          .sub-score-trio { grid-template-columns: 1fr; }
+        }
+
+        .sub-score-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .sub-score-circle {
+          position: relative;
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          background: conic-gradient(var(--primary) var(--pct), rgba(15,23,42,0.08) var(--pct));
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 0 8px var(--bg-dark-secondary);
+        }
+
+        .sub-score-circle::before {
+          content: "";
+          position: absolute;
+          inset: 10px;
+          border-radius: 50%;
+          background: var(--bg-dark-secondary);
+        }
+
+        .sub-score-val {
+          position: relative;
+          z-index: 1;
+          font-size: 28px;
+          font-weight: 800;
+          color: var(--text-main);
+          line-height: 1;
+        }
+
+        .sub-score-unit {
+          position: relative;
+          z-index: 1;
+          font-size: 11px;
+          color: var(--text-muted);
+        }
+
+        .sub-score-item p {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-muted);
+          text-align: center;
         }
 
         /* Voice metrics row */
@@ -643,10 +999,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           margin-bottom: 36px;
         }
 
-        .speech-metrics-row h3 {
-          font-size: 16px;
-          margin-bottom: 4px;
-        }
+        .speech-metrics-row h3 { font-size: 16px; margin-bottom: 4px; }
 
         .metrics-intro {
           font-size: 13px;
@@ -684,11 +1037,8 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           margin-top: 1px;
         }
 
-        /* Detailed audits */
-        .audit-section h2 {
-          font-size: 22px;
-          margin-bottom: 4px;
-        }
+        /* Audit section */
+        .audit-section h2 { font-size: 22px; margin-bottom: 4px; }
 
         .section-desc {
           font-size: 14px;
@@ -729,7 +1079,9 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         .trigger-left {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
+          flex: 1;
+          min-width: 0;
         }
 
         .question-number-badge {
@@ -740,19 +1092,43 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           font-size: 13px;
           font-weight: 700;
           color: var(--primary-hover);
+          flex-shrink: 0;
+        }
+
+        .round-badge {
+          background: var(--primary-glow-subtle);
+          border: 1px solid rgba(139, 92, 246, 0.2);
+          color: var(--primary-hover);
+          padding: 3px 9px;
+          border-radius: 9999px;
+          font-size: 11px;
+          font-weight: 600;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
 
         .trigger-question-text {
           font-size: 15px;
           font-weight: 600;
           line-height: 1.4;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .trigger-right {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
           flex-shrink: 0;
+        }
+
+        .q-hiring-badge {
+          font-size: 12px;
+          font-weight: 700;
+          padding: 4px 10px;
+          border-radius: 9999px;
+          white-space: nowrap;
         }
 
         .trigger-score-badge {
@@ -760,24 +1136,13 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           font-weight: 700;
           padding: 4px 10px;
           border-radius: 9999px;
+          white-space: nowrap;
         }
 
-        .score-high {
-          background: var(--color-success-bg);
-          color: var(--color-success);
-        }
+        .score-high { background: var(--color-success-bg); color: var(--color-success); }
+        .score-mid { background: var(--color-warning-bg); color: var(--color-warning); }
+        .score-low { background: var(--color-danger-bg); color: var(--color-danger); }
 
-        .score-mid {
-          background: var(--color-warning-bg);
-          color: var(--color-warning);
-        }
-
-        .score-low {
-          background: var(--color-danger-bg);
-          color: var(--color-danger);
-        }
-
-        /* Collapsed Details */
         .audit-details {
           padding: 24px;
           background: rgba(15, 23, 42, 0.02);
@@ -795,7 +1160,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
 
         .sub-scores-row {
           display: flex;
-          gap: 12px;
+          gap: 10px;
           margin-bottom: 20px;
           flex-wrap: wrap;
         }
@@ -803,10 +1168,10 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         .sub-score-badge {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 5px;
           background: rgba(15, 23, 42, 0.02);
           border: 1px solid var(--border);
-          padding: 6px 12px;
+          padding: 5px 10px;
           border-radius: var(--radius-sm);
           font-size: 12px;
         }
@@ -816,45 +1181,46 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         .success-color { color: var(--color-success); }
         .warning-color { color: var(--color-warning); }
 
-        .audit-answers-grid {
+        /* ─── 3-Column Answer Grid ─── */
+        .audit-answers-grid-3 {
           display: grid;
-          grid-template-columns: 1fr 1.2fr;
-          gap: 20px;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 16px;
           margin-bottom: 20px;
         }
 
-        @media (max-width: 768px) {
-          .audit-answers-grid {
-            grid-template-columns: 1fr;
-          }
+        @media (max-width: 900px) {
+          .audit-answers-grid-3 { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 600px) {
+          .audit-answers-grid-3 { grid-template-columns: 1fr; }
         }
 
         .answer-box {
-          padding: 20px;
+          padding: 18px;
           background: rgba(15, 23, 42, 0.01);
           border: 1px solid var(--border);
           border-radius: var(--radius-md);
         }
 
         .answer-box h4 {
-          font-size: 13px;
-          font-weight: 600;
+          font-size: 12px;
+          font-weight: 700;
           color: var(--text-dark);
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
 
         .ideal-title-row {
           display: flex;
           align-items: center;
           gap: 6px;
-          margin-bottom: 12px;
+          margin-bottom: 10px;
         }
 
-        .ideal-title-row h4 {
-          margin-bottom: 0;
-        }
+        .ideal-title-row h4 { margin-bottom: 0; }
 
         .answer-box p {
           font-size: 13px;
@@ -863,29 +1229,43 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           white-space: pre-line;
         }
 
-        .ideal-answer p {
-          color: var(--text-main);
+        .expected-answer {
+          background: rgba(14, 165, 233, 0.02);
+          border-color: rgba(14, 165, 233, 0.15);
         }
 
-        /* Analysis bullet boxes */
-        .analysis-grid {
+        .expected-answer p {
+          color: var(--color-info);
+        }
+
+        .ideal-answer p { color: var(--text-main); }
+
+        /* ─── 3-Column Analysis Grid ─── */
+        .analysis-grid-3 {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-          margin-bottom: 20px;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+
+        @media (max-width: 900px) {
+          .analysis-grid-3 { grid-template-columns: 1fr 1fr; }
         }
 
         @media (max-width: 600px) {
-          .analysis-grid {
-            grid-template-columns: 1fr;
-          }
+          .analysis-grid-3 { grid-template-columns: 1fr; }
         }
 
         .analysis-box {
-          padding: 20px;
+          padding: 18px;
           background: rgba(15, 23, 42, 0.01);
           border: 1px solid var(--border);
           border-radius: var(--radius-md);
+        }
+
+        .suggestions-box {
+          background: rgba(124, 58, 237, 0.02);
+          border-color: rgba(124, 58, 237, 0.15);
         }
 
         .box-title {
@@ -895,15 +1275,13 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           margin-bottom: 12px;
         }
 
-        .box-title h5 {
-          font-size: 14px;
-        }
+        .box-title h5 { font-size: 13px; }
 
         .analysis-box ul {
           padding-left: 16px;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 7px;
         }
 
         .analysis-box li {
@@ -913,15 +1291,13 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         }
 
         .missing-concepts-panel {
-          padding: 16px;
+          padding: 14px;
           border: 1px dashed var(--border);
           border-radius: var(--radius-md);
           background: rgba(14, 165, 233, 0.01);
         }
 
-        .missing-concepts-panel .box-title {
-          margin-bottom: 8px;
-        }
+        .missing-concepts-panel .box-title { margin-bottom: 8px; }
 
         .concepts-list {
           display: flex;
@@ -939,7 +1315,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           font-weight: 500;
         }
 
-        /* Career advisor section */
+        /* Career advisor */
         .career-guidance-section {
           padding: 30px;
           margin-top: 36px;
@@ -952,10 +1328,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           margin-bottom: 6px;
         }
 
-        .guidance-header h2 {
-          font-size: 20px;
-          margin-bottom: 0;
-        }
+        .guidance-header h2 { font-size: 20px; margin-bottom: 0; }
 
         .guidance-desc {
           font-size: 14px;
@@ -970,9 +1343,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         }
 
         @media (max-width: 768px) {
-          .guidance-grid-main {
-            grid-template-columns: 1fr;
-          }
+          .guidance-grid-main { grid-template-columns: 1fr; }
         }
 
         .guidance-left-col {
@@ -1054,9 +1425,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         .roadmap-timeline::after {
           content: "";
           position: absolute;
-          top: 10px;
-          bottom: 10px;
-          left: 15px;
+          top: 10px; bottom: 10px; left: 15px;
           width: 2px;
           background: var(--border);
           z-index: 1;
@@ -1071,8 +1440,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         }
 
         .node-number {
-          width: 32px;
-          height: 32px;
+          width: 32px; height: 32px;
           border-radius: 50%;
           background: var(--primary);
           color: white;
@@ -1085,10 +1453,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           border: 4px solid var(--bg-dark-secondary);
         }
 
-        .node-text {
-          padding-top: 6px;
-        }
-
+        .node-text { padding-top: 6px; }
         .node-text p {
           font-size: 13px;
           line-height: 1.4;
@@ -1104,4 +1469,3 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
     </div>
   );
 }
-

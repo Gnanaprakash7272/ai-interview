@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Code2, Server, Compass, ClipboardList, Loader2, Award, Zap, 
-  Cpu, BarChart2, ShieldAlert, FileText, Globe, UserCheck, Building2
+  Cpu, BarChart2, ShieldAlert, FileText, Globe, UserCheck, Building2,
+  User, Wrench, Briefcase
 } from "lucide-react";
 import allCompanies from "@/data/allCompanies.json";
 
@@ -35,6 +36,13 @@ const LANGUAGES = [
   { id: "te", name: "Telugu (తెలుగు)", flag: "🇮🇳", desc: "తెలుగు ఇంటర్వ్యూ" },
   { id: "hi", name: "Hindi (हिन्दी)", flag: "🇮🇳", desc: "हिन्दी साक्षात्कार" },
   { id: "ja", name: "Japanese (日本語)", flag: "🇯🇵", desc: "日本語面接" }
+];
+
+const EXPERIENCE_LEVELS = [
+  { id: "fresher", name: "Fresher / Entry Level", desc: "0–1 year. Basic concepts, internship projects, academic work." },
+  { id: "junior", name: "Junior (1–3 Years)", desc: "Real-world project experience with guided team support." },
+  { id: "mid", name: "Mid-Level (3–6 Years)", desc: "Independent development, system design awareness." },
+  { id: "senior", name: "Senior (6+ Years)", desc: "Architecture, mentorship, cross-team technical leadership." },
 ];
 
 const QUESTION_COUNTS = [3, 5];
@@ -72,6 +80,11 @@ export default function NewInterview() {
   const [targetCompany, setTargetCompany] = useState("general");
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // Candidate Profile (NEW)
+  const [candidateName, setCandidateName] = useState("");
+  const [skillsInput, setSkillsInput] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("fresher");
   
   // Custom Inputs
   const [resumeText, setResumeText] = useState("");
@@ -109,6 +122,12 @@ export default function NewInterview() {
   const handleStart = async () => {
     setLoading(true);
     try {
+      // Parse skills from comma-separated string
+      const skillsArray = skillsInput
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       const res = await fetch("/api/interviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -120,7 +139,11 @@ export default function NewInterview() {
           questionCount,
           resumeText,
           jobDescriptionText,
-          targetCompany
+          targetCompany,
+          // New candidate profile fields
+          candidateName: candidateName.trim() || "Candidate",
+          skills: skillsArray,
+          experienceLevel
         })
       });
 
@@ -225,7 +248,77 @@ export default function NewInterview() {
       </header>
 
       <div className="setup-body">
-        
+
+        {/* ─── Candidate Profile Section (NEW) ─── */}
+        <section className="setup-section candidate-profile-section">
+          <h2>0. Candidate Profile</h2>
+          <div className="candidate-profile-grid glass-card">
+
+            {/* Candidate Name */}
+            <div className="profile-field">
+              <label className="profile-label" htmlFor="candidate-name">
+                <User size={15} />
+                <span>Your Name</span>
+              </label>
+              <input
+                id="candidate-name"
+                type="text"
+                className="form-input profile-input"
+                placeholder="e.g. Gnana Prakash"
+                value={candidateName}
+                onChange={(e) => setCandidateName(e.target.value)}
+                maxLength={60}
+              />
+            </div>
+
+            {/* Skills / Tech Stack */}
+            <div className="profile-field">
+              <label className="profile-label" htmlFor="skills-input">
+                <Wrench size={15} />
+                <span>Skills / Tech Stack</span>
+              </label>
+              <input
+                id="skills-input"
+                type="text"
+                className="form-input profile-input"
+                placeholder="e.g. Python, TensorFlow, SQL, React (comma-separated)"
+                value={skillsInput}
+                onChange={(e) => setSkillsInput(e.target.value)}
+              />
+              <p className="profile-hint">Gemini will ask questions tailored to these specific skills.</p>
+            </div>
+
+            {/* Experience Level */}
+            <div className="profile-field profile-field-full">
+              <label className="profile-label">
+                <Briefcase size={15} />
+                <span>Experience Level</span>
+              </label>
+              <div className="experience-grid">
+                {EXPERIENCE_LEVELS.map((level) => {
+                  const isSelected = experienceLevel === level.id;
+                  return (
+                    <button
+                      key={level.id}
+                      onClick={() => setExperienceLevel(level.id)}
+                      className={`exp-card ${isSelected ? "selected" : ""}`}
+                    >
+                      <div className="exp-indicator">
+                        {isSelected && <span className="exp-dot"></span>}
+                      </div>
+                      <div className="exp-info">
+                        <h4>{level.name}</h4>
+                        <p>{level.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        </section>
+
         {/* Job Role Section */}
         <section className="setup-section">
           <h2>1. Target Job Role</h2>
@@ -526,6 +619,124 @@ export default function NewInterview() {
         .setup-wrapper {
           padding-top: 40px;
           padding-bottom: 80px;
+        }
+
+        /* ─── Candidate Profile ─── */
+        .candidate-profile-section {
+          margin-bottom: 0;
+        }
+
+        .candidate-profile-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          padding: 28px;
+          margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+          .candidate-profile-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .profile-field {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .profile-field-full {
+          grid-column: 1 / -1;
+        }
+
+        .profile-label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        .profile-input {
+          height: 42px;
+          font-size: 14px;
+        }
+
+        .profile-hint {
+          font-size: 11px;
+          color: var(--text-dark);
+          margin-top: -2px;
+        }
+
+        .experience-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 10px;
+        }
+
+        .exp-card {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 14px 16px;
+          background: rgba(15, 23, 42, 0.02);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          cursor: pointer;
+          text-align: left;
+          width: 100%;
+          transition: all 0.2s ease;
+        }
+
+        .exp-card:hover {
+          border-color: var(--border-hover);
+          background: rgba(15, 23, 42, 0.04);
+        }
+
+        .exp-card.selected {
+          border-color: var(--primary);
+          background: var(--primary-glow-subtle);
+          box-shadow: var(--shadow-glow);
+        }
+
+        .exp-indicator {
+          width: 18px;
+          height: 18px;
+          border-radius: 9999px;
+          border: 2px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          margin-top: 2px;
+          transition: border-color 0.2s;
+        }
+
+        .exp-card.selected .exp-indicator {
+          border-color: var(--primary);
+        }
+
+        .exp-dot {
+          width: 8px;
+          height: 8px;
+          background: var(--primary);
+          border-radius: 9999px;
+        }
+
+        .exp-info h4 {
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 2px;
+        }
+
+        .exp-info p {
+          font-size: 11px;
+          color: var(--text-dark);
+          line-height: 1.4;
         }
 
         .setup-header {

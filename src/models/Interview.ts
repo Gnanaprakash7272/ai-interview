@@ -7,6 +7,7 @@ const InterviewSchema = new Schema(
       ref: "User",
       required: true,
     },
+    // Job configuration
     domain: {
       type: String,
       required: true,
@@ -23,6 +24,20 @@ const InterviewSchema = new Schema(
       type: String,
       default: "en",
     },
+    // Candidate profile fields (new)
+    candidateName: {
+      type: String,
+      default: "Candidate",
+    },
+    skills: {
+      type: [String],
+      default: [],
+    },
+    experienceLevel: {
+      type: String,
+      default: "fresher",
+    },
+    // Optional tailoring
     resumeText: {
       type: String,
       default: "",
@@ -35,6 +50,7 @@ const InterviewSchema = new Schema(
       type: String,
       default: "general",
     },
+    // Session state
     status: {
       type: String,
       enum: ["pending", "completed"],
@@ -48,6 +64,7 @@ const InterviewSchema = new Schema(
       type: Number,
       default: 0,
     },
+    // Aggregate scores
     totalScore: {
       type: Number,
       default: 0,
@@ -59,6 +76,12 @@ const InterviewSchema = new Schema(
     fluencyScore: {
       type: Number,
       default: 0,
+    },
+    // Overall hiring verdict for the session
+    overallHiringRecommendation: {
+      type: String,
+      enum: ["Strong Hire", "Hire", "Weak Hire", "Reject"],
+      default: "Weak Hire",
     },
     recommendations: {
       type: [String],
@@ -75,4 +98,3 @@ const InterviewSchema = new Schema(
 );
 
 export default mongoose.models.Interview || mongoose.model("Interview", InterviewSchema);
-

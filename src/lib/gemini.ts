@@ -14,13 +14,26 @@ if (apiKey && apiKey !== "YOUR_GEMINI_API_KEY_HERE" && apiKey.trim() !== "") {
 }
 
 export interface FeedbackResult {
+  // Existing 0-100 fields (preserved for backward compatibility)
   score: number;
   technicalAccuracy: number;
   communication: number;
   confidence: number;
   fluency: number;
+
+  // New granular 0-10 sub-scores
+  grammarScore: number;
+  clarityScore: number;
+  problemSolvingScore: number;
+
+  // New qualitative fields
+  hiringRecommendation: "Strong Hire" | "Hire" | "Weak Hire" | "Reject";
+  round: string;
+  expectedAnswer: string;
+
   strengths: string[];
   weaknesses: string[];
+  suggestions: string[];
   missingConcepts: string[];
   improvedAnswer: string;
 }
@@ -43,14 +56,17 @@ export async function generateNextConversationalQuestion(
   history: { question: string; answer: string }[],
   resumeText?: string,
   jobDescriptionText?: string,
-  targetCompany?: string
+  targetCompany?: string,
+  candidateName?: string,
+  skills?: string[],
+  experienceLevel?: string
 ): Promise<string> {
   const isFirstQuestion = history.length === 0;
 
   // Retrieve company specific parameters if any
   const companyKey = targetCompany?.toLowerCase() || "general";
   const companyInfo = (companyQuestions as any)[companyKey];
-  
+
   let companyPrompt = "";
   if (companyInfo && companyKey !== "general") {
     companyPrompt = `Target Company: ${companyInfo.name}
@@ -64,48 +80,61 @@ export async function generateNextConversationalQuestion(
        Since the target company is ${companyDisplayName}, you must align the interview style, typical technical rigor, focus areas, and coding standards to match ${companyDisplayName}'s real-world recruitment process. If they are known for specific topics (e.g., networking for Cisco, finance/scale for banking, enterprise Java/consulting for IT service firms, DSA/scalable systems for big tech), adapt your questions accordingly.`;
   }
 
+  // Build candidate context for personalization
+  const candidateContext = `
+Candidate Profile:
+- Name: ${candidateName || "Candidate"}
+- Job Role: ${jobRole.replace(/_/g, " ")}
+- Experience Level: ${experienceLevel || difficulty}
+- Skills / Tech Stack: ${skills && skills.length > 0 ? skills.join(", ") : "General"}
+`;
+
   if (ai) {
     try {
       let prompt = "";
       if (isFirstQuestion) {
-        prompt = `Act as an expert AI Recruiter conducting a mock interview.
-        Job Role: ${jobRole}
-        Difficulty Level: ${difficulty}
-        Interview Focus: ${interviewType} (technical, hr, or mixed)
-        Language: ${language} (respond strictly in the selected language. If it is 'ta' respond in Tamil, 'te' in Telugu, 'hi' in Hindi, 'ja' in Japanese, 'en' in English).
+        prompt = `You are an expert AI Technical Interviewer, HR Interviewer, and Hiring Manager conducting a real mock interview.
 
-        ${companyPrompt}
+${candidateContext}
+Difficulty Level: ${difficulty}
+Interview Focus: ${interviewType} (technical, hr, or mixed)
+Language: ${language} (respond strictly in the selected language. If it is 'ta' respond in Tamil, 'te' in Telugu, 'hi' in Hindi, 'ja' in Japanese, 'en' in English).
 
-        ${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
-        ${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
+${companyPrompt}
 
-        Since this is the FIRST question:
-        1. Welcome the candidate briefly (1 sentence) in the target language${companyInfo && companyKey !== "general" ? `, mentioning that they are interviewing for ${companyInfo.name}` : ""}.
-        2. Ask a highly relevant first interview question based on the job role, difficulty, focus, and company style guidelines. If a resume is provided, ask about a project or skill listed on it.
-        
-        Output ONLY the final spoken recruiter message. Do not include any HTML, markdown, tags, or JSON.`;
+${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
+${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
+
+Since this is the FIRST question:
+1. Welcome the candidate briefly (1 sentence) addressing them by name${companyInfo && companyKey !== "general" ? `, and mention that they are interviewing for ${companyInfo.name}` : ""}.
+2. Identify the appropriate interview round (e.g., Technical Round 1, HR Round, etc.) based on the interview type.
+3. Ask a highly relevant first interview question tailored specifically to the candidate's skills and experience level. If a resume is provided, ask about a specific project or skill on it. If skills are provided, ask about one of their listed skills.
+
+Output ONLY the final spoken recruiter message. Do not include any HTML, markdown, tags, or JSON.`;
       } else {
         const historyText = history.map((h, i) => `Q${i+1}: ${h.question}\nA${i+1}: ${h.answer}`).join("\n\n");
-        prompt = `Act as an expert AI Recruiter conducting a conversational mock interview.
-        Job Role: ${jobRole}
-        Difficulty Level: ${difficulty}
-        Interview Focus: ${interviewType} (technical, hr, or mixed)
-        Language: ${language} (respond strictly in the selected language. If it is 'ta' respond in Tamil, 'te' in Telugu, 'hi' in Hindi, 'ja' in Japanese, 'en' in English).
+        prompt = `You are an expert AI Technical Interviewer conducting a conversational mock interview.
 
-        ${companyPrompt}
+${candidateContext}
+Difficulty Level: ${difficulty}
+Interview Focus: ${interviewType} (technical, hr, or mixed)
+Language: ${language} (respond strictly in the selected language. If it is 'ta' respond in Tamil, 'te' in Telugu, 'hi' in Hindi, 'ja' in Japanese, 'en' in English).
 
-        ${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
-        ${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
+${companyPrompt}
 
-        Conversation History:
-        ${historyText}
+${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
+${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
 
-        Generate the NEXT conversational follow-up question.
-        Guidelines:
-        1. Read the candidate's last answer. If they provided a vague or incomplete answer, ask a follow-up digging deeper into their technical choice or explanation (e.g., "Why did you use EC2 instead of Lambda?").
-        2. If their answer was complete, move on to the next logical concept or behavioral scenario that fits ${companyInfo && companyKey !== "general" ? `${companyInfo.name}'s typical` : "the target"} interview style.
-        3. Keep the conversation extremely natural, like a real human recruiter.
-        4. Output ONLY the final spoken recruiter question. Do not include any tags, markdown, or JSON.`;
+Conversation History:
+${historyText}
+
+Generate the NEXT conversational follow-up question.
+Guidelines:
+1. Address ${candidateName || "the candidate"} by name occasionally to keep it natural.
+2. Read the candidate's last answer. If they provided a vague or incomplete answer, ask a follow-up digging deeper into their technical choice or explanation (e.g., "Why did you use that approach instead of X?").
+3. If their answer was complete, move on to the next logical concept or behavioral scenario that fits ${companyInfo && companyKey !== "general" ? `${companyInfo.name}'s typical` : "the target"} interview style and the candidate's skills.
+4. Keep the conversation extremely natural, like a real human recruiter.
+5. Output ONLY the final spoken recruiter question. Do not include any tags, markdown, or JSON.`;
       }
 
       const response = await ai.models.generateContent({
@@ -122,27 +151,28 @@ export async function generateNextConversationalQuestion(
   }
 
   // Fallbacks if Gemini is not set up
+  const name = candidateName || "Candidate";
   if (isFirstQuestion) {
     if (language === "ta") {
-      return companyKey !== "general" 
-        ? `வணக்கம், ${companyInfo.name} நேர்காணலுக்கு உங்களை வரவேற்கிறேன். உங்களைப் பற்றி சுருக்கமாக அறிமுகப்படுத்துங்கள்.`
-        : "வணக்கம், நேர்காணலுக்கு உங்களை வரவேற்கிறேன். உங்களைப் பற்றி சுருக்கமாக அறிமுகப்படுத்துங்கள்.";
+      return companyKey !== "general"
+        ? `வணக்கம் ${name}, ${companyInfo.name} நேர்காணலுக்கு உங்களை வரவேற்கிறேன். உங்களைப் பற்றி சுருக்கமாக அறிமுகப்படுத்துங்கள்.`
+        : `வணக்கம் ${name}, நேர்காணலுக்கு உங்களை வரவேற்கிறேன். உங்களைப் பற்றி சுருக்கமாக அறிமுகப்படுத்துங்கள்.`;
     }
-    if (language === "ja") return "こんにちは、面接へようこそ。簡単に自己紹介をしてください。";
-    if (language === "hi") return "नमस्कार, साक्षात्कार में आपका स्वागत है। कृपया अपना संक्षिप्त परिचय दें।";
-    if (language === "te") return "నమస్కారం, ఇంటర్వ్యూకి స్వాగతం. దయచేసి మిమ్మల్ని మీరు పరిచయం చేసుకోండి.";
+    if (language === "ja") return `こんにちは ${name}さん、面接へようこそ。簡単に自己紹介をしてください。`;
+    if (language === "hi") return `नमस्कार ${name}, साक्षात्कार में आपका स्वागत है। कृपया अपना संक्षिप्त परिचय दें।`;
+    if (language === "te") return `నమస్కారం ${name}, ఇంటర్వ్యూకి స్వాగతం. దయచేసి మిమ్మల్ని మీరు పరిచయం చేసుకోండి.`;
     return companyKey !== "general"
-      ? `Hello, welcome to your ${companyInfo.name} interview. Can you please introduce yourself and outline your core project experiences?`
-      : "Hello, welcome to your interview. Can you please introduce yourself and outline your core project experiences?";
+      ? `Hello ${name}, welcome to your ${companyInfo.name} interview. Can you please introduce yourself and walk me through your experience with ${skills && skills.length > 0 ? skills[0] : "your core skills"}?`
+      : `Hello ${name}, welcome to your mock interview. Can you please introduce yourself and walk me through your technical background?`;
   } else {
     const lastAnswer = history[history.length - 1]?.answer || "";
     if (language === "ta") return `நீங்கள் கூறிய '${lastAnswer.slice(0, 15)}...' என்பது புரிகிறது. இதன் தொழில்நுட்ப பயன்பாடு மற்றும் சவால்கள் பற்றி விரிவாக கூற முடியுமா?`;
-    return "Interesting. Can you expand on the scaling challenges, design choices, and tradeoffs you faced in this scenario?";
+    return "Interesting. Can you expand on the design choices, trade-offs, and any challenges you faced in this scenario?";
   }
 }
 
 /**
- * Grades a voice answer using Gemini, factoring in speaking metrics.
+ * Grades a candidate answer using Gemini with full scoring dimensions.
  */
 export async function evaluateAnswer(
   question: string,
@@ -150,7 +180,10 @@ export async function evaluateAnswer(
   duration: number,
   speakingSpeed: number,
   hesitationCount: number,
-  language: string
+  language: string,
+  jobRole?: string,
+  experienceLevel?: string,
+  skills?: string[]
 ): Promise<FeedbackResult> {
   if (!answer || answer.trim().length < 5) {
     return {
@@ -159,46 +192,82 @@ export async function evaluateAnswer(
       communication: 15,
       confidence: 10,
       fluency: 15,
-      strengths: ["Attempted to log a response"],
+      grammarScore: 2,
+      clarityScore: 2,
+      problemSolvingScore: 1,
+      hiringRecommendation: "Reject",
+      round: "Technical Round",
+      expectedAnswer: "A complete answer should define the core concept, outline its implementation, explain trade-offs, and provide a real-world use case.",
+      strengths: ["Attempted to respond"],
       weaknesses: ["Answer is extremely brief or silent.", "No descriptive technical details provided."],
+      suggestions: ["Speak clearly and in full sentences.", "Structure your answer: define → explain → example → trade-offs."],
       missingConcepts: ["Core definition", "Practical use-cases", "Underlying mechanics"],
-      improvedAnswer: "Please speak clearly into the microphone. A complete answer should define the core concepts, outline implementation, and explain tradeoffs."
+      improvedAnswer: "Please speak clearly into the microphone. A complete answer should define the core concepts, outline implementation, and explain trade-offs."
     };
   }
 
   if (ai) {
     try {
-      const prompt = `Act as an expert technical mock recruiter. Grade the candidate's spoken answer.
-      
-      Question Asked: ${question}
-      Candidate's Transcribed Spoken Answer: ${answer}
-      Speaking Duration: ${duration} seconds
-      Speaking Speed: ${speakingSpeed.toFixed(1)} words per minute
-      Hesitation Count: ${hesitationCount} (instances of fillers like "umm", "aaa", "like", "i don't know", etc.)
-      Language: ${language}
+      const prompt = `You are an expert Technical Interviewer, HR Interviewer, Placement Trainer, and Hiring Manager. Evaluate the candidate's answer to the interview question below.
 
-      Evaluate the response based on the following:
-      1. Technical Accuracy: Correctness of concepts, details, depth, and relevance.
-      2. Communication Skills: Clarity, grammar, vocabulary, sentence structure.
-      3. Confidence Analysis: Steadiness of voice, hesitation fillers count, and confidence level.
-      4. Fluency Analysis: Flow of explanation, smoothness, transitions.
+Interview Context:
+- Job Role: ${jobRole || "Software Developer"}
+- Experience Level: ${experienceLevel || "Intermediate"}
+- Candidate Skills: ${skills && skills.length > 0 ? skills.join(", ") : "General"}
+- Language: ${language}
 
-      Provide constructive strengths and weaknesses. Also outline "missingConcepts" which the candidate failed to cover. Give an "improvedAnswer" written in first-person developer tone in the target language.
+Question Asked: ${question}
+Candidate's Answer: ${answer}
+Answer Duration: ${duration} seconds
+Speaking Speed: ${speakingSpeed.toFixed(1)} words per minute
+Hesitation Count: ${hesitationCount} (filler words like "umm", "aaa", "like", "I don't know")
 
-      You must return a single JSON object with this exact shape:
-      {
-        "score": number (0 to 100),
-        "technicalAccuracy": number (0 to 100),
-        "communication": number (0 to 100),
-        "confidence": number (0 to 100),
-        "fluency": number (0 to 100),
-        "strengths": string[] (at least 2 points),
-        "weaknesses": string[] (at least 2 points),
-        "missingConcepts": string[] (concepts they missed),
-        "improvedAnswer": string (improved answer in first person developer tone in the target language)
-      }
+Evaluation Criteria:
+1. Technical Accuracy (0-100): Correctness of concepts, depth, and relevance to the question and role.
+2. Communication Skills (0-100): Clarity, grammar, vocabulary, and sentence structure.
+3. Confidence (0-100): Steadiness, hesitation filler count, delivery confidence.
+4. Fluency (0-100): Flow of explanation, smoothness, transitions between ideas.
+5. Grammar Score (0-10): Grammatical correctness, sentence structure quality.
+6. Clarity Score (0-10): How clearly the candidate communicated their answer.
+7. Problem Solving Score (0-10): Analytical thinking, approach structure, and solution quality.
 
-      Return ONLY the raw JSON string. Do not wrap in markdown tags.`;
+Based on the evaluation, determine the interview Round (e.g., "Technical Round 1", "HR Round", "System Design Round").
+
+Provide:
+- strengths: at least 2 specific positive points
+- weaknesses: at least 2 specific areas to improve
+- suggestions: at least 2 actionable improvement tips
+- missingConcepts: concepts the candidate failed to mention
+- expectedAnswer: what a strong interview answer to this question would look like (2-4 sentences, written as expert reference)
+- improvedAnswer: rewrite the candidate's answer in a professional first-person developer tone in the target language
+
+Also determine hiringRecommendation based on overall performance:
+- "Strong Hire": Score >= 85, excellent technical accuracy and communication
+- "Hire": Score >= 70, good performance with minor gaps
+- "Weak Hire": Score >= 55, average performance with notable gaps
+- "Reject": Score < 55, significant gaps in knowledge or communication
+
+Return a single JSON object with this exact shape:
+{
+  "score": number (0 to 100, overall weighted average),
+  "technicalAccuracy": number (0 to 100),
+  "communication": number (0 to 100),
+  "confidence": number (0 to 100),
+  "fluency": number (0 to 100),
+  "grammarScore": number (0 to 10),
+  "clarityScore": number (0 to 10),
+  "problemSolvingScore": number (0 to 10),
+  "hiringRecommendation": "Strong Hire" | "Hire" | "Weak Hire" | "Reject",
+  "round": string,
+  "expectedAnswer": string,
+  "strengths": string[] (at least 2 specific points),
+  "weaknesses": string[] (at least 2 specific points),
+  "suggestions": string[] (at least 2 actionable tips),
+  "missingConcepts": string[] (concepts they missed),
+  "improvedAnswer": string (improved answer in first person developer tone in ${language})
+}
+
+Return ONLY the raw JSON string. Do not wrap in markdown tags or code blocks.`;
 
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
@@ -215,7 +284,25 @@ export async function evaluateAnswer(
           typeof feedback.technicalAccuracy === "number" &&
           typeof feedback.communication === "number"
         ) {
-          return feedback as FeedbackResult;
+          // Ensure all new fields have defaults if Gemini doesn't return them
+          return {
+            score: feedback.score ?? 0,
+            technicalAccuracy: feedback.technicalAccuracy ?? 0,
+            communication: feedback.communication ?? 0,
+            confidence: feedback.confidence ?? 0,
+            fluency: feedback.fluency ?? 0,
+            grammarScore: feedback.grammarScore ?? 5,
+            clarityScore: feedback.clarityScore ?? 5,
+            problemSolvingScore: feedback.problemSolvingScore ?? 5,
+            hiringRecommendation: feedback.hiringRecommendation ?? "Weak Hire",
+            round: feedback.round ?? "Technical Round",
+            expectedAnswer: feedback.expectedAnswer ?? "",
+            strengths: feedback.strengths ?? [],
+            weaknesses: feedback.weaknesses ?? [],
+            suggestions: feedback.suggestions ?? [],
+            missingConcepts: feedback.missingConcepts ?? [],
+            improvedAnswer: feedback.improvedAnswer ?? "",
+          } as FeedbackResult;
         }
       }
     } catch (error) {
@@ -229,13 +316,28 @@ export async function evaluateAnswer(
   let commScore = Math.min(50 + (hesitationCount < 3 ? 20 : 5) + (speakingSpeed > 100 && speakingSpeed < 160 ? 20 : 5), 92);
   let confScore = Math.max(100 - (hesitationCount * 12), 40);
   let fluScore = Math.min(Math.round((commScore + confScore) / 2), 95);
-  
+  let gramScore = Math.min(Math.round(commScore / 10), 10);
+  let clarScore = Math.min(Math.round((techScore + commScore) / 20), 10);
+  let psScore = Math.min(Math.round(techScore / 10), 10);
+  const overallScore = Math.round((techScore + commScore + confScore + fluScore) / 4);
+
+  let hiringRec: FeedbackResult["hiringRecommendation"] = "Reject";
+  if (overallScore >= 85) hiringRec = "Strong Hire";
+  else if (overallScore >= 70) hiringRec = "Hire";
+  else if (overallScore >= 55) hiringRec = "Weak Hire";
+
   return {
-    score: Math.round((techScore + commScore + confScore + fluScore) / 4),
+    score: overallScore,
     technicalAccuracy: techScore,
     communication: commScore,
     confidence: confScore,
     fluency: fluScore,
+    grammarScore: gramScore,
+    clarityScore: clarScore,
+    problemSolvingScore: psScore,
+    hiringRecommendation: hiringRec,
+    round: "Technical Round",
+    expectedAnswer: "A strong answer should define the concept clearly, explain its implementation, provide a real-world example, and discuss trade-offs or limitations.",
     strengths: [
       wordCount > 30 ? "Good overall word volume and detail coverage." : "Answered the prompt directly.",
       hesitationCount < 3 ? "Exhibited highly fluent speech with minimal hesitation fillers." : "Kept trying to outline technical inputs."
@@ -244,7 +346,11 @@ export async function evaluateAnswer(
       wordCount < 40 ? "Explanation was short. Elaborate with system design or tooling examples." : "Ensure your answer structure follows a step-by-step layout.",
       hesitationCount >= 3 ? "Frequent hesitation fillers ('umm', 'aaa') detected. Practice speaking in steady streams." : "Could improve vocabulary precision."
     ],
-    missingConcepts: ["System tradeoffs", "Production scalability constraints", "Security credentials"],
+    suggestions: [
+      "Structure your answer: Define → Explain → Real Example → Trade-offs.",
+      "Practice mock answers out loud to improve fluency and reduce filler words."
+    ],
+    missingConcepts: ["System trade-offs", "Production scalability constraints", "Real-world examples"],
     improvedAnswer: "To improve, explain the concept clearly, detail why you used it, mention performance implications, and outline design choices in a professional tone."
   };
 }
@@ -371,4 +477,3 @@ export async function generateGeneralRecommendations(feedbackHistory: any[]): Pr
     ];
   }
 }
-

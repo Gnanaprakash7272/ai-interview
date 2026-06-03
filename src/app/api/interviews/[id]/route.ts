@@ -77,36 +77,62 @@ export async function POST(
     let totalCommSum = 0;
     const count = answers.length;
 
-    // Evaluate each answer
+    // Hiring recommendation score tally
+    const hiringScores: Record<string, number> = {
+      "Strong Hire": 0,
+      "Hire": 0,
+      "Weak Hire": 0,
+      "Reject": 0
+    };
+
+    // Evaluate each answer with full candidate context
     const evaluationPromises = answers.map(async (ans) => {
       const responseDoc = await Response.findById(ans.responseId);
       if (!responseDoc || responseDoc.interviewId.toString() !== id) {
         return;
       }
 
-      // Grade the answer
+      // Grade the answer with candidate context for personalization
       const feedback = await evaluateAnswer(
         responseDoc.question,
         ans.answer,
         60, // default duration
         130, // default speaking speed (WPM)
         0, // default hesitation count
-        interview.language || "en"
+        interview.language || "en",
+        interview.domain,
+        interview.experienceLevel || interview.difficulty,
+        interview.skills || []
       );
 
-      // Save evaluation to response doc
+      // Save all evaluation fields to response doc
       responseDoc.answer = ans.answer;
       responseDoc.score = feedback.score;
       responseDoc.technicalAccuracy = feedback.technicalAccuracy;
       responseDoc.communication = feedback.communication;
+      responseDoc.confidence = feedback.confidence;
+      responseDoc.fluency = feedback.fluency;
+      responseDoc.grammarScore = feedback.grammarScore;
+      responseDoc.clarityScore = feedback.clarityScore;
+      responseDoc.problemSolvingScore = feedback.problemSolvingScore;
+      responseDoc.hiringRecommendation = feedback.hiringRecommendation;
+      responseDoc.round = feedback.round;
+      responseDoc.expectedAnswer = feedback.expectedAnswer;
       responseDoc.strengths = feedback.strengths;
       responseDoc.weaknesses = feedback.weaknesses;
+      responseDoc.suggestions = feedback.suggestions || [];
+      responseDoc.missingConcepts = feedback.missingConcepts;
       responseDoc.improvedAnswer = feedback.improvedAnswer;
       await responseDoc.save();
 
       totalScoreSum += feedback.score;
       totalTechSum += feedback.technicalAccuracy;
       totalCommSum += feedback.communication;
+
+      // Tally hiring recommendations
+      if (feedback.hiringRecommendation in hiringScores) {
+        hiringScores[feedback.hiringRecommendation]++;
+      }
     });
 
     await Promise.all(evaluationPromises);
@@ -115,9 +141,17 @@ export async function POST(
     const avgTech = count > 0 ? Math.round(totalTechSum / count) : 0;
     const avgComm = count > 0 ? Math.round(totalCommSum / count) : 0;
 
+    // Determine overall session hiring recommendation (majority vote)
+    let overallHiringRec: string = "Weak Hire";
+    if (avgScore >= 85) overallHiringRec = "Strong Hire";
+    else if (avgScore >= 70) overallHiringRec = "Hire";
+    else if (avgScore >= 55) overallHiringRec = "Weak Hire";
+    else overallHiringRec = "Reject";
+
     // 1. Update Interview status
     interview.status = "completed";
     interview.totalScore = avgScore;
+    interview.overallHiringRecommendation = overallHiringRec;
     await interview.save();
 
     // 2. Fetch all completed interviews for the user to recalculate Analytics
@@ -133,7 +167,7 @@ export async function POST(
 
     const userAvgScore = interviewCount > 0 ? Math.round(allScoreSum / interviewCount) : 0;
 
-    // To get average technical accuracy and communication across all questions of all completed interviews
+    // Get average technical accuracy and communication across all completed interviews
     const completedInterviewIds = completedInterviews.map((item) => item._id);
     const allResponses = await Response.find({
       interviewId: { $in: completedInterviewIds }
@@ -183,7 +217,8 @@ export async function POST(
       message: "Evaluation completed",
       totalScore: avgScore,
       technicalScore: avgTech,
-      communicationScore: avgComm
+      communicationScore: avgComm,
+      overallHiringRecommendation: overallHiringRec
     });
 
   } catch (error: any) {
