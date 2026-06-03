@@ -5,17 +5,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   AlertCircle,
-  ArrowLeft,
-  ArrowRight,
   Brain,
+  Clock,
   Cpu,
   Loader2,
-  Send,
-  Sparkles,
   Mic,
   MicOff,
   Volume2,
-  Video
+  VolumeX,
+  User,
+  Send,
+  Bot
 } from "lucide-react";
 
 interface QuestionItem {
@@ -59,7 +59,11 @@ function InterviewRoomContent() {
   const [isRecording, setIsRecording] = useState(false);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   
+  // Timer states
+  const [elapsedTime, setElapsedTime] = useState(0);
+
   // To keep track of previously typed/spoken text before starting a new recording session
   const [baseTranscript, setBaseTranscript] = useState("");
 
@@ -99,6 +103,19 @@ function InterviewRoomContent() {
     fetchInterview();
   }, [interviewId, authStatus, router]);
 
+  // Timer Effect
+  useEffect(() => {
+    if (loading || submitting || error) return;
+    const interval = setInterval(() => setElapsedTime(prev => prev + 1), 1000);
+    return () => clearInterval(interval);
+  }, [loading, submitting, error]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   // Setup Camera
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -113,7 +130,7 @@ function InterviewRoomContent() {
         console.error("Camera access denied", err);
       }
     };
-    if (!loading) {
+    if (!loading && !error) {
       startCamera();
     }
     return () => {
@@ -121,7 +138,7 @@ function InterviewRoomContent() {
         stream.getTracks().forEach(t => t.stop());
       }
     };
-  }, [loading]);
+  }, [loading, error]);
 
   // Setup Speech Recognition
   useEffect(() => {
@@ -159,7 +176,6 @@ function InterviewRoomContent() {
         };
         
         recognition.onend = () => {
-           // If it stops unexpectedly, we can handle it, but for now just sync state
            setIsRecording(false);
         };
 
@@ -178,28 +194,25 @@ function InterviewRoomContent() {
       recognitionRef.current.stop();
       setIsRecording(false);
     } else {
-      // Save current text box content as base before appending new speech
       const currentAns = questions[currentIndex] ? (answers[questions[currentIndex].id] || "") : "";
       setBaseTranscript(currentAns + (currentAns.endsWith(" ") || currentAns === "" ? "" : " "));
-      
       recognitionRef.current.start();
       setIsRecording(true);
     }
   };
 
   const playQuestionAudio = () => {
-    if (!questions[currentIndex]) return;
+    if (!questions[currentIndex] || isMuted) return;
     const text = questions[currentIndex].question;
     
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     
     const voices = window.speechSynthesis.getVoices();
-    // Prefer a generic english voice or Google voice if available
     const englishVoice = voices.find(v => v.lang.includes('en-US') && v.name.includes('Google')) || voices.find(v => v.lang.includes('en-US'));
     if (englishVoice) utterance.voice = englishVoice;
     
-    utterance.rate = 0.95; // Slightly slower for clarity
+    utterance.rate = 0.95;
     
     utterance.onstart = () => setIsAiSpeaking(true);
     utterance.onend = () => setIsAiSpeaking(false);
@@ -210,18 +223,16 @@ function InterviewRoomContent() {
   // Play audio when question changes manually or on first load
   useEffect(() => {
     if (questions.length > 0 && !loading && !error) {
-      // It requires user interaction to play audio in most browsers on first load,
-      // so we might need them to click a button, but we try anyway.
-      playQuestionAudio();
+      if (!isMuted) playQuestionAudio();
       
-      // Also stop recording if they moved to next question
       if (isRecording && recognitionRef.current) {
          recognitionRef.current.stop();
          setIsRecording(false);
       }
     }
     return () => window.speechSynthesis.cancel();
-  }, [currentIndex, questions, loading, error]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, questions, loading, error, isMuted]);
 
 
   // Loading quotes during evaluation
@@ -249,55 +260,46 @@ function InterviewRoomContent() {
       ...prev,
       [currentQ.id]: e.target.value,
     }));
-    // Sync manual typing with base transcript so if they start recording again, it doesn't overwrite manual edits
     setBaseTranscript(e.target.value);
   };
 
   const currentAnswer = questions[currentIndex] ? (answers[questions[currentIndex].id] || "") : "";
   const wordCount = currentAnswer.trim() === "" ? 0 : currentAnswer.trim().split(/\s+/).length;
 
-  const handleNext = () => {
+  const handleNextOrSubmit = async () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
-    }
-  };
+    } else {
+      setSubmitting(true);
+      setError("");
 
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
-    }
-  };
+      try {
+        const formattedAnswers = questions.map((q) => ({
+          responseId: q.id,
+          answer: answers[q.id] || "",
+        }));
 
-  const handleSubmitInterview = async () => {
-    setSubmitting(true);
-    setError("");
+        const res = await fetch("/api/interview/evaluate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            interviewId,
+            answers: formattedAnswers,
+          }),
+        });
 
-    try {
-      const formattedAnswers = questions.map((q) => ({
-        responseId: q.id,
-        answer: answers[q.id] || "",
-      }));
+        const data = await res.json();
 
-      const res = await fetch("/api/interview/evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          interviewId,
-          answers: formattedAnswers,
-        }),
-      });
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to submit interview for evaluation");
+        }
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to submit interview for evaluation");
+        router.push(`/results?id=${interviewId}`);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "Failed to submit responses");
+        setSubmitting(false);
       }
-
-      router.push(`/results?id=${interviewId}`);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to submit responses");
-      setSubmitting(false);
     }
   };
 
@@ -326,12 +328,10 @@ function InterviewRoomContent() {
   }
 
   const currentQuestion = questions[currentIndex];
-  const progressPercent = questions.length ? ((currentIndex + 1) / questions.length) * 100 : 0;
+  const isLastQuestion = currentIndex === questions.length - 1;
 
   return (
     <main className="interview-room-container">
-      <div className="app-bg-glow"></div>
-
       {submitting && (
         <div className="eval-overlay">
           <div className="eval-loader glass-card animate-pulse-glow">
@@ -344,21 +344,17 @@ function InterviewRoomContent() {
       )}
 
       <div className="container interview-room-content animate-fade-in">
-        {/* Header Indicator */}
-        <header className="room-header flex-between">
-          <div className="room-meta">
-            <div className="room-badge">
-              <Cpu size={14} />
-              <span>{interview?.domain.replace(/_/g, " ").toUpperCase()}</span>
-            </div>
-            <span className="room-diff-badge">{interview?.difficulty} Prep</span>
+        
+        {/* Top Bar matching screenshot */}
+        <header className="top-bar-card">
+          <div className="tags-row">
+            <span className="tag tag-primary">{interview?.domain.replace(/_/g, " ")}</span>
+            <span className="tag tag-secondary">{interview?.difficulty} Level</span>
+            <span className="tag tag-outline">Technical Focus</span>
           </div>
-
-          <div className="progress-indicator">
-            <span className="progress-text">Question {currentIndex + 1} of {questions.length}</span>
-            <div className="progress-bar-track">
-              <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }}></div>
-            </div>
+          <div className="timer-badge">
+            <Clock size={16} />
+            <span>{formatTime(elapsedTime)}</span>
           </div>
         </header>
 
@@ -371,132 +367,120 @@ function InterviewRoomContent() {
 
         {/* Live Video Workspace */}
         {currentQuestion && (
-          <div className="video-workspace-grid">
+          <div className="video-panels-grid">
             
             {/* Left: AI Interviewer */}
-            <div className="glass-card video-panel interviewer-panel">
-              <div className="panel-header flex-between">
-                <div className="badge ai-badge">
-                  <Sparkles size={14} />
-                  <span>AI Interviewer</span>
-                </div>
-                <button onClick={playQuestionAudio} className="btn-icon" title="Repeat Question">
-                  <Volume2 size={16} className={isAiSpeaking ? "text-primary animate-pulse" : ""} />
-                </button>
-              </div>
-              
-              <div className="interviewer-avatar-container">
-                <div className={`ai-avatar-ring ${isAiSpeaking ? 'speaking' : ''}`}>
-                  <Brain size={64} className="ai-brain-logo" />
+            <div className="video-panel ai-panel">
+              <div className="panel-badge-row">
+                <div className="panel-badge badge-dark">
+                  <Bot size={14} />
+                  <span>AI Recruiter</span>
                 </div>
                 {isAiSpeaking && (
-                  <div className="voice-visualizer">
-                    <div className="bar"></div>
-                    <div className="bar"></div>
-                    <div className="bar"></div>
-                    <div className="bar"></div>
-                    <div className="bar"></div>
+                  <div className="panel-badge badge-purple-glow animate-pulse">
+                    <span>SPEAKING</span>
                   </div>
                 )}
               </div>
               
-              <div className="question-caption-box">
+              <div className="ai-center-visual">
+                <div className={`ai-cpu-icon ${isAiSpeaking ? 'speaking' : ''}`}>
+                  <Cpu size={32} />
+                </div>
+                <div className={`waveform-visualizer ${isAiSpeaking ? 'active' : ''}`}>
+                  <svg viewBox="0 0 200 40" className="waveform-svg">
+                    <path className="wave path-1" d="M0 20 Q 25 20, 50 20 T 100 20 T 150 20 T 200 20" />
+                    <path className="wave path-2" d="M0 20 Q 25 20, 50 20 T 100 20 T 150 20 T 200 20" />
+                    <path className="wave path-3" d="M0 20 Q 25 20, 50 20 T 100 20 T 150 20 T 200 20" />
+                  </svg>
+                </div>
+              </div>
+              
+              <div className="caption-box">
                 <p>{currentQuestion.question}</p>
               </div>
             </div>
 
-            {/* Right: Candidate Camera & Answer */}
-            <div className="glass-card video-panel candidate-panel">
-               <div className="panel-header flex-between">
-                <div className="badge candidate-badge">
-                  <Video size={14} />
-                  <span>You (Live)</span>
+            {/* Right: Candidate Camera */}
+            <div className="video-panel candidate-panel">
+               <div className="panel-badge-row">
+                <div className="panel-badge badge-dark">
+                  <User size={14} />
+                  <span>You (Candidate)</span>
                 </div>
-                <div className={`recording-indicator ${isRecording ? 'active' : ''}`}>
-                   <div className="rec-dot"></div>
-                   <span>{isRecording ? 'Recording...' : 'Standby'}</span>
+                <div className="panel-badge badge-green">
+                   <div className="green-dot"></div>
+                   <span>Live Webcam</span>
                 </div>
               </div>
 
-              <div className="webcam-container">
-                {!cameraActive && (
-                  <div className="camera-placeholder">
-                     <Loader2 size={24} className="animate-spin" />
-                     <p>Starting Camera...</p>
-                  </div>
-                )}
-                <video 
-                  ref={videoRef} 
-                  autoPlay 
-                  playsInline 
-                  muted 
-                  className={`webcam-feed ${cameraActive ? 'active' : ''}`}
-                />
-              </div>
-
-              <div className="answer-section">
-                <div className="answer-header flex-between">
-                  <h4>Real-time Transcript</h4>
-                  <span className={`word-indicator ${wordCount > 30 ? "sufficient" : ""}`}>
-                    {wordCount} words
-                  </span>
+              {!cameraActive && (
+                <div className="camera-placeholder">
+                   <Loader2 size={24} className="animate-spin" />
+                   <p>Starting Camera...</p>
                 </div>
-                
+              )}
+              
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                className={`webcam-video ${cameraActive ? 'active' : ''}`}
+              />
+
+              <div className="transcript-overlay">
                 <textarea
-                  className="form-input transcript-textarea"
-                  placeholder="Click the microphone to start answering with your voice..."
+                  className="floating-transcript-input"
+                  placeholder={isRecording ? "Listening..." : "Click Mic to speak or type..."}
                   value={currentAnswer}
                   onChange={handleTextChange}
                   disabled={submitting}
                 />
-                
-                <div className="action-row">
-                   <button 
-                     onClick={toggleRecording} 
-                     className={`btn btn-mic ${isRecording ? 'recording' : ''}`}
-                     disabled={submitting}
-                   >
-                     {isRecording ? <MicOff size={18} /> : <Mic size={18} />}
-                     <span>{isRecording ? "Stop Answering" : "Speak Answer"}</span>
-                   </button>
-                </div>
               </div>
-
             </div>
 
           </div>
         )}
 
         {/* Footer Actions */}
-        <footer className="room-footer flex-between">
-          <button
-            onClick={handlePrev}
-            className="btn btn-secondary"
-            disabled={currentIndex === 0 || submitting}
-          >
-            <ArrowLeft size={16} />
-            <span>Previous</span>
-          </button>
+        <footer className="floating-footer">
+          <div className="footer-stats">
+            <span>Q{currentIndex + 1} of {questions.length}</span>
+            <span className="dot">•</span>
+            <span>{wordCount} words</span>
+            <span className="dot">•</span>
+            <span>{formatTime(elapsedTime)}s</span>
+          </div>
 
-          {currentIndex < questions.length - 1 ? (
-            <button
-              onClick={handleNext}
-              className="btn btn-primary"
-              disabled={submitting}
+          <div className="footer-controls">
+            <button 
+              onClick={toggleRecording} 
+              className={`control-btn mic-btn ${isRecording ? 'recording' : ''}`}
+              title="Toggle Microphone"
             >
-              <span>Next Question</span>
-              <ArrowRight size={16} />
+              {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
             </button>
-          ) : (
-            <button
-              onClick={handleSubmitInterview}
-              className="btn btn-primary btn-submit-final"
-              disabled={submitting}
+            <button 
+              onClick={() => {
+                setIsMuted(!isMuted);
+                if (!isMuted) window.speechSynthesis.cancel();
+              }} 
+              className="control-btn vol-btn"
+              title="Toggle AI Voice"
             >
-              <span>Submit Interview</span>
-              <Send size={16} />
+              {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
             </button>
-          )}
+          </div>
+
+          <button
+            onClick={handleNextOrSubmit}
+            className="footer-submit-btn"
+            disabled={submitting}
+          >
+            <span>{isLastQuestion ? "Finish & Get Report" : "Next Question"}</span>
+            <Send size={16} />
+          </button>
         </footer>
       </div>
 
@@ -504,215 +488,171 @@ function InterviewRoomContent() {
         .interview-room-container {
           min-height: calc(100vh - 70px);
           padding: 30px 0 60px 0;
+          background-color: #f8fafc;
         }
+        
         .interview-loading {
           min-height: calc(100vh - 70px);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 16px;
-          color: var(--text-muted);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--text-muted);
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .animate-spin { animation: spin 1s linear infinite; color: var(--primary); }
         
         .interview-room-content {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-          max-width: 1100px;
+          display: flex; flex-direction: column; gap: 24px; max-width: 1200px; margin: 0 auto;
         }
         
-        .room-header {
-          border-bottom: 1px solid var(--border);
-          padding-bottom: 16px;
+        /* Top Bar */
+        .top-bar-card {
+          background: white; border-radius: 16px; padding: 16px 24px;
+          display: flex; justify-content: space-between; align-items: center;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         }
-        .room-meta { display: flex; align-items: center; gap: 12px; }
-        .room-badge {
-          display: flex; align-items: center; gap: 6px; padding: 6px 12px;
-          background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2);
-          border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--primary-hover);
+        .tags-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .tag { padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 600; text-transform: capitalize; }
+        .tag-primary { background: rgba(139, 92, 246, 0.1); color: #7c3aed; }
+        .tag-secondary { background: rgba(241, 245, 249, 1); color: #475569; }
+        .tag-outline { border: 1px solid #e2e8f0; color: #64748b; }
+        
+        .timer-badge {
+          display: flex; align-items: center; gap: 8px; font-weight: 700; color: #334155;
+          padding: 8px 16px; background: #f8fafc; border-radius: 99px; border: 1px solid #e2e8f0;
         }
-        .room-diff-badge { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-        
-        .progress-indicator { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; width: 200px; }
-        .progress-text { font-size: 12px; font-weight: 600; color: var(--text-muted); }
-        .progress-bar-track { width: 100%; height: 6px; background: rgba(15, 23, 42, 0.05); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
-        .progress-bar-fill { height: 100%; background: var(--primary); border-radius: 999px; transition: width 0.3s ease; }
-        
-        .error-alert { display: flex; align-items: center; gap: 8px; background: var(--color-danger-bg); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--color-danger); padding: 12px; border-radius: var(--radius-md); font-size: 14px; }
-        
-        /* New Split Screen Video Layout */
-        .video-workspace-grid {
-          display: grid;
-          grid-template-columns: 1fr 1.2fr;
-          gap: 24px;
-          min-height: 550px;
+
+        /* Video Panels */
+        .video-panels-grid {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 500px;
         }
         @media (max-width: 900px) {
-          .video-workspace-grid { grid-template-columns: 1fr; }
+          .video-panels-grid { grid-template-columns: 1fr; height: auto; }
         }
 
         .video-panel {
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          background: rgba(255, 255, 255, 0.6);
-        }
-
-        .panel-header {
-          padding: 16px 20px;
-          border-bottom: 1px solid var(--border);
-          background: rgba(255, 255, 255, 0.5);
-        }
-
-        .badge {
-          display: flex; align-items: center; gap: 6px;
-          font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
-        }
-        .ai-badge { background: rgba(139, 92, 246, 0.1); color: var(--primary); }
-        .candidate-badge { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
-
-        .recording-indicator {
-          display: flex; align-items: center; gap: 6px;
-          font-size: 12px; font-weight: 600; color: var(--text-muted);
-        }
-        .recording-indicator.active { color: var(--color-danger); }
-        .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
-        .recording-indicator.active .rec-dot {
-          background: var(--color-danger);
-          animation: pulse 1.5s infinite;
-        }
-
-        .btn-icon {
-          background: none; border: none; cursor: pointer; color: var(--text-muted);
-          transition: all 0.2s; padding: 4px;
-        }
-        .btn-icon:hover { color: var(--primary); transform: scale(1.1); }
-
-        /* AI Interviewer Side */
-        .interviewer-avatar-container {
-          flex-grow: 1;
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          background: radial-gradient(circle at center, rgba(139, 92, 246, 0.05) 0%, transparent 70%);
-          min-height: 250px;
-          position: relative;
-        }
-
-        .ai-avatar-ring {
-          width: 120px; height: 120px;
-          border-radius: 50%;
-          background: white;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 10px 30px rgba(139, 92, 246, 0.1);
-          border: 2px solid transparent;
-          transition: all 0.3s ease;
-        }
-        .ai-avatar-ring.speaking {
-          border-color: var(--primary);
-          box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);
-          animation: pulse-ring 2s infinite;
-        }
-        .ai-brain-logo { color: var(--primary); }
-
-        @keyframes pulse-ring {
-          0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-          70% { box-shadow: 0 0 0 20px rgba(139, 92, 246, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
-        }
-
-        .voice-visualizer {
-          display: flex; gap: 4px; margin-top: 30px; height: 30px; align-items: center;
-        }
-        .voice-visualizer .bar {
-          width: 4px; background: var(--primary); border-radius: 2px;
-          animation: sound 0.5s ease-in-out infinite alternate;
-        }
-        .voice-visualizer .bar:nth-child(1) { height: 30%; animation-delay: 0.1s; }
-        .voice-visualizer .bar:nth-child(2) { height: 100%; animation-delay: 0.2s; }
-        .voice-visualizer .bar:nth-child(3) { height: 50%; animation-delay: 0.3s; }
-        .voice-visualizer .bar:nth-child(4) { height: 80%; animation-delay: 0.4s; }
-        .voice-visualizer .bar:nth-child(5) { height: 40%; animation-delay: 0.5s; }
-
-        @keyframes sound {
-          0% { height: 20%; opacity: 0.5; }
-          100% { height: 100%; opacity: 1; }
-        }
-
-        .question-caption-box {
-          padding: 24px;
-          background: rgba(255,255,255,0.8);
-          border-top: 1px solid var(--border);
-          font-size: 16px; font-weight: 600; line-height: 1.6;
-          color: var(--text-main);
-          min-height: 120px;
-        }
-
-        /* Candidate Side */
-        .candidate-panel {
+          border-radius: 20px; overflow: hidden; position: relative;
           display: flex; flex-direction: column;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
-        .webcam-container {
-          position: relative;
-          background: #000;
-          height: 250px;
-          width: 100%;
-          overflow: hidden;
+
+        .panel-badge-row {
+          position: absolute; top: 20px; left: 20px; right: 20px;
+          display: flex; justify-content: space-between; z-index: 10;
         }
-        .camera-placeholder {
-          position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        .panel-badge {
+          display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+          border-radius: 99px; font-size: 12px; font-weight: 600;
+        }
+        .badge-dark { background: rgba(15, 23, 42, 0.7); color: white; backdrop-filter: blur(8px); }
+        .badge-purple-glow { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.4); text-transform: uppercase; letter-spacing: 0.5px; font-size: 10px; }
+        .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); backdrop-filter: blur(8px); }
+        .green-dot { width: 8px; height: 8px; background: #34d399; border-radius: 50%; box-shadow: 0 0 8px #34d399; }
+
+        /* AI Panel */
+        .ai-panel {
+          background: linear-gradient(145deg, #1e1b4b, #0f172a);
+          justify-content: center; align-items: center;
+        }
+        
+        .ai-center-visual {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
-          color: rgba(255,255,255,0.7); gap: 10px; font-size: 14px;
+          gap: 20px; transform: translateY(-20px);
         }
-        .webcam-feed {
-          width: 100%; height: 100%; object-fit: cover;
-          opacity: 0; transition: opacity 0.5s;
-          transform: scaleX(-1); /* Mirror effect */
+        .ai-cpu-icon {
+          width: 80px; height: 80px; border-radius: 50%; border: 2px solid rgba(139, 92, 246, 0.3);
+          display: flex; align-items: center; justify-content: center; color: #a78bfa;
+          background: rgba(139, 92, 246, 0.1); transition: all 0.3s;
         }
-        .webcam-feed.active { opacity: 1; }
+        .ai-cpu-icon.speaking {
+          border-color: #a78bfa; color: white;
+          box-shadow: 0 0 30px rgba(139, 92, 246, 0.6), inset 0 0 20px rgba(139, 92, 246, 0.4);
+        }
 
-        .answer-section {
-          padding: 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 12px;
+        .waveform-visualizer { width: 240px; height: 40px; opacity: 0.3; transition: opacity 0.3s; }
+        .waveform-visualizer.active { opacity: 1; }
+        .waveform-svg { width: 100%; height: 100%; overflow: visible; }
+        .wave { fill: none; stroke-width: 2; stroke-linecap: round; }
+        .path-1 { stroke: #c084fc; transform-origin: center; animation: wave-anim 2s infinite linear; }
+        .path-2 { stroke: #818cf8; transform-origin: center; animation: wave-anim 3s infinite linear reverse; opacity: 0.7; }
+        .path-3 { stroke: #f472b6; transform-origin: center; animation: wave-anim 2.5s infinite linear; opacity: 0.5; }
+        @keyframes wave-anim {
+          0% { transform: scaleY(1); }
+          25% { transform: scaleY(2); }
+          50% { transform: scaleY(0.5); }
+          75% { transform: scaleY(1.5); }
+          100% { transform: scaleY(1); }
         }
-        .answer-header h4 { font-size: 14px; font-weight: 700; color: var(--text-dark); }
-        .word-indicator { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-        .word-indicator.sufficient { color: var(--color-success); }
-        
-        .transcript-textarea {
-          flex-grow: 1; min-height: 120px; resize: none; font-size: 15px; line-height: 1.6;
-          background: rgba(255,255,255,0.8); border-color: rgba(0,0,0,0.05);
-        }
-        .transcript-textarea:focus { background: #fff; }
 
-        .action-row {
-          display: flex; justify-content: center; padding-top: 10px;
+        .caption-box {
+          position: absolute; bottom: 24px; left: 24px; right: 24px;
+          background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1);
+          border-left: 3px solid #a78bfa; padding: 16px 20px; border-radius: 12px;
+          color: white; font-size: 15px; line-height: 1.6; text-align: center;
         }
-        .btn-mic {
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          background: rgba(139, 92, 246, 0.1); color: var(--primary);
-          border: 1px solid rgba(139, 92, 246, 0.2);
-          width: 100%; font-weight: 600; padding: 12px;
-          transition: all 0.3s;
+
+        /* Candidate Panel */
+        .candidate-panel { background: #000; min-height: 350px; }
+        .webcam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0; transition: opacity 0.5s; }
+        .webcam-video.active { opacity: 1; }
+        .camera-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); gap: 12px; }
+
+        .transcript-overlay {
+          position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+          width: 80%; max-width: 500px; z-index: 10;
         }
-        .btn-mic:hover { background: rgba(139, 92, 246, 0.15); }
-        .btn-mic.recording {
-          background: var(--color-danger); color: white; border-color: var(--color-danger);
-          box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        .floating-transcript-input {
+          width: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15);
+          color: white; border-radius: 12px; padding: 14px 20px; min-height: 52px; font-size: 14px;
+          resize: none; outline: none; transition: all 0.3s;
+          text-align: center;
         }
+        .floating-transcript-input:focus { background: rgba(0,0,0,0.7); border-color: rgba(255,255,255,0.3); min-height: 100px; text-align: left; }
+        .floating-transcript-input::placeholder { color: rgba(255,255,255,0.4); text-align: center; font-style: italic; }
+
+        /* Floating Footer */
+        .floating-footer {
+          background: #27273a; border-radius: 16px; padding: 16px 24px;
+          display: flex; justify-content: space-between; align-items: center;
+          margin-top: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        @media (max-width: 768px) {
+           .floating-footer { flex-direction: column; gap: 20px; }
+        }
+
+        .footer-stats {
+          display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 14px; font-weight: 500;
+        }
+        .dot { opacity: 0.5; font-size: 10px; }
+
+        .footer-controls { display: flex; gap: 16px; }
+        .control-btn {
+          width: 54px; height: 54px; border-radius: 50%; border: none; cursor: pointer;
+          display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .mic-btn { background: #3f3f5a; color: white; }
+        .mic-btn:hover { background: #4f4f70; }
+        .mic-btn.recording { background: #ef4444; color: white; box-shadow: 0 0 20px rgba(239,68,68,0.4); animation: pulse-red 2s infinite; }
+        .vol-btn { background: #8b5cf6; color: white; }
+        .vol-btn:hover { background: #7c3aed; }
         
-        .room-footer { border-top: 1px solid var(--border); padding-top: 20px; }
-        .btn-submit-final { background: var(--color-success); box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.4); }
-        .btn-submit-final:hover { background: #34d399; box-shadow: 0 6px 20px 0 rgba(16, 185, 129, 0.5); }
-        
-        .eval-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(248, 250, 252, 0.85); backdrop-filter: blur(20px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px; }
-        .eval-loader { max-width: 480px; width: 100%; padding: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 20px; background: rgba(255, 255, 255, 0.9); }
-        .eval-brain-icon { color: var(--primary); }
+        @keyframes pulse-red {
+          0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+          70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .footer-submit-btn {
+          background: #7c3aed; color: white; border: none; padding: 12px 24px; border-radius: 12px;
+          display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; cursor: pointer;
+          transition: background 0.2s;
+        }
+        .footer-submit-btn:hover { background: #6d28d9; }
+        .footer-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .eval-overlay { position: fixed; inset: 0; background: rgba(248, 250, 252, 0.85); backdrop-filter: blur(20px); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .eval-loader { max-width: 480px; width: 100%; padding: 40px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 20px; background: white; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+        .eval-brain-icon { color: #8b5cf6; }
         .eval-loader h3 { font-size: 20px; font-weight: 700; }
         .eval-loader p { font-size: 14px; color: var(--text-muted); min-height: 40px; }
-        .progress-ring-loader { border: 3px solid rgba(15, 23, 42, 0.1); border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.05); } }
-        .animate-pulse { animation: pulse 2s infinite ease-in-out; }
+        .progress-ring-loader { border: 3px solid #f1f5f9; border-top: 3px solid #8b5cf6; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
       `}</style>
     </main>
   );
@@ -721,14 +661,8 @@ function InterviewRoomContent() {
 export default function InterviewRoomPage() {
   return (
     <Suspense fallback={
-      <div className="interview-loading">
-        <Loader2 className="animate-spin" size={40} />
-        <p>Loading session parameters...</p>
-        <style jsx>{`
-          .interview-loading { min-height: calc(100vh - 70px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--text-muted); }
-          @keyframes spin { to { transform: rotate(360deg); } }
-          .animate-spin { animation: spin 1s linear infinite; color: var(--primary); }
-        `}</style>
+      <div className="interview-loading" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 className="animate-spin" size={40} color="#8b5cf6" />
       </div>
     }>
       <InterviewRoomContent />
