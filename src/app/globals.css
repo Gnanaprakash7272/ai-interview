@@ -535,8 +535,8 @@ p {
   width: 28px;
   background: rgba(15, 23, 42, 0.05);
   border-radius: 4px 4px 0 0;
-  animation: barGrow 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  animation-delay: var(--delay);
+  animation: barGrow 1s cubic-bezier(0.16, 1, 0.3, 1) forwards, barPulse 4s ease-in-out infinite alternate;
+  animation-delay: var(--delay), calc(var(--delay) + 1s);
   opacity: 0;
   transform-origin: bottom;
   position: relative;
@@ -601,6 +601,11 @@ p {
     opacity: 1;
     transform: scaleY(1);
   }
+}
+
+@keyframes barPulse {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.9); }
 }
 
 .footer {
