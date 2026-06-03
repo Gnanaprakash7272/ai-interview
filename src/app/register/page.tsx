@@ -193,7 +193,6 @@ export default function Register() {
         .auth-logo-image {
           border-radius: 12px;
           object-fit: contain;
-          transform: scale(1.4);
         }
 
         .auth-header h1 {

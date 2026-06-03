@@ -154,8 +154,7 @@ export default function Navbar() {
         .logo-image {
           border-radius: 4px;
           object-fit: contain;
-          transform: scale(1.3);
-          margin-right: 4px;
+          margin-right: 8px;
         }
 
         .logo-text {
