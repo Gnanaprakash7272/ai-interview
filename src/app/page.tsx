@@ -41,6 +41,15 @@ export default async function Home() {
             </Link>
           )}
         </div>
+
+        {/* Dashboard Mockup Showcase */}
+        <div className="hero-mockup-wrapper animate-fade-in" style={{ marginTop: '80px', width: '100%', maxWidth: '1000px', perspective: '1000px', animationDelay: '0.3s' }}>
+          <div className="glass-card" style={{ padding: '10px', transform: 'rotateX(4deg) translateY(-10px)', boxShadow: '0 30px 60px -15px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(15, 23, 42, 0.05)', transition: 'transform 0.5s ease', borderRadius: '16px' }} 
+               onMouseEnter={(e) => e.currentTarget.style.transform = 'rotateX(0deg) translateY(0)'}
+               onMouseLeave={(e) => e.currentTarget.style.transform = 'rotateX(4deg) translateY(-10px)'}>
+            <img src="/screenshots/dashboard.png" alt="Mockora Dashboard" style={{ width: '100%', height: 'auto', borderRadius: '10px', display: 'block' }} />
+          </div>
+        </div>
       </section>
 
       {/* Features Grid */}
