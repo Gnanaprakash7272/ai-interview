@@ -464,17 +464,34 @@ p {
 }
 
 .mock-graph {
-  background: rgba(15, 23, 42, 0.02);
+  background: rgba(255, 255, 255, 0.4);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
   width: 100%;
   max-width: 320px;
-  height: 180px;
-  padding: 24px;
+  height: 200px;
+  padding: 30px 24px 24px;
   display: flex;
   align-items: flex-end;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.graph-grid {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 30px 24px 24px;
+  pointer-events: none;
+}
+
+.grid-line {
+  width: 100%;
+  height: 1px;
+  background: rgba(15, 23, 42, 0.04);
 }
 
 .mock-bar-container {
@@ -483,23 +500,69 @@ p {
   align-items: flex-end;
   width: 100%;
   height: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .mock-bar {
-  width: 32px;
-  background: rgba(15, 23, 42, 0.04);
-  border: 1px solid rgba(15, 23, 42, 0.04);
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  width: 28px;
+  background: rgba(15, 23, 42, 0.05);
+  border-radius: 4px 4px 0 0;
   animation: barGrow 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: var(--delay);
   opacity: 0;
   transform-origin: bottom;
+  position: relative;
 }
 
 .mock-bar.highlight {
-  background: linear-gradient(to top, var(--primary), var(--primary-hover));
-  border-color: rgba(139, 92, 246, 0.3);
-  box-shadow: 0 0 15px 0 var(--primary-glow);
+  background: linear-gradient(to top, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.9));
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+  border: none;
+}
+
+.bar-glow-dot {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--primary);
+}
+
+.floating-tooltip {
+  position: absolute;
+  top: -15px;
+  right: -20px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  animation: floatTooltip 3s ease-in-out infinite;
+  z-index: 10;
+}
+
+.tooltip-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-success);
+  border-radius: 50%;
+  box-shadow: 0 0 5px var(--color-success);
+}
+
+@keyframes floatTooltip {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 @keyframes barGrow {

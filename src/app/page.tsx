@@ -103,12 +103,26 @@ export default async function Home() {
           </div>
           <div className="hook-visual">
             <div className="mock-graph">
+              <div className="graph-grid">
+                <div className="grid-line"></div>
+                <div className="grid-line"></div>
+                <div className="grid-line"></div>
+                <div className="grid-line"></div>
+              </div>
               <div className="mock-bar-container">
                 <div className="mock-bar" style={{ height: "40%", "--delay": "0.1s" } as any}></div>
                 <div className="mock-bar" style={{ height: "60%", "--delay": "0.2s" } as any}></div>
-                <div className="mock-bar highlight" style={{ height: "85%", "--delay": "0.3s" } as any}></div>
+                <div className="mock-bar highlight" style={{ height: "85%", "--delay": "0.3s" } as any}>
+                  <div className="bar-glow-dot"></div>
+                </div>
                 <div className="mock-bar" style={{ height: "70%", "--delay": "0.4s" } as any}></div>
-                <div className="mock-bar highlight" style={{ height: "95%", "--delay": "0.5s" } as any}></div>
+                <div className="mock-bar highlight" style={{ height: "95%", "--delay": "0.5s" } as any}>
+                  <div className="bar-glow-dot"></div>
+                </div>
+              </div>
+              <div className="floating-tooltip">
+                <div className="tooltip-dot"></div>
+                <span>Performance +24%</span>
               </div>
             </div>
           </div>
