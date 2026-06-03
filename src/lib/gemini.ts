@@ -179,7 +179,7 @@ Generate the NEXT conversational follow-up question.
 Guidelines:
 1. Address ${candidateName || "the candidate"} by name occasionally to keep it natural.
 2. CRITICAL: Read the candidate's last answer closely. If they ask to "repeat the question", or say they don't understand, DO NOT move on. Simply repeat your previous question in a slightly simplified way.
-3. If they gave a vague or incomplete answer, ask a follow-up digging deeper into their technical choice or explanation.
+3. If they gave a highly incorrect technical answer, briefly and professionally correct them (e.g., "Actually, [concept] works by...") before asking your follow-up question. If their answer was just vague, ask a follow-up digging deeper.
 4. If they answered well, move on to the next related technical topic or increase difficulty.
 5. Keep the conversation extremely natural, strict, and professional like a real human recruiter.
 6. Output ONLY the final spoken recruiter question. Do not include any tags, markdown, or JSON.`;
@@ -292,7 +292,7 @@ Provide:
 - suggestions: at least 2 actionable improvement tips
 - missingConcepts: specific technical keywords they failed to mention
 - expectedAnswer: SPECIFIC technical answer to the exact question (2-4 sentences, written as expert reference)
-- improvedAnswer: rewrite the candidate's answer in a professional first-person developer tone in the target language
+- improvedAnswer: CRITICAL: If their answer was wrong or incomplete, explicitly correct them by saying "You mentioned [their point], but that is incorrect/incomplete. Instead, you should say: [Full Correct Answer]". Make it highly direct, corrective, and conversational.
 
 Also determine hiringRecommendation based on overall performance:
 - "Strong Hire": Score >= 85, excellent technical accuracy and communication
