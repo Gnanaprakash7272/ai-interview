@@ -36,6 +36,7 @@ export interface FeedbackResult {
   suggestions: string[];
   missingConcepts: string[];
   improvedAnswer: string;
+  nextQuestion?: string;
 }
 
 export interface CareerGuidanceResult {
@@ -248,40 +249,53 @@ export async function evaluateAnswer(
   language: string,
   jobRole?: string,
   experienceLevel?: string,
-  skills?: string[]
+  skills?: string[],
+  history?: { question: string; answer: string }[],
+  isLastQuestion?: boolean,
+  targetCompany?: string
 ): Promise<FeedbackResult> {
-  if (!answer || answer.trim().length < 5) {
+  const wordCount = answer ? answer.trim().split(/\s+/).length : 0;
+  if (!answer || wordCount < 5) {
     return {
-      score: 15,
-      technicalAccuracy: 10,
+      score: 10,
+      technicalAccuracy: 0,
       communication: 15,
       confidence: 10,
-      fluency: 15,
-      grammarScore: 2,
-      clarityScore: 2,
-      problemSolvingScore: 1,
+      fluency: 10,
+      grammarScore: 1,
+      clarityScore: 1,
+      problemSolvingScore: 0,
       hiringRecommendation: "Reject",
       round: "Technical Round",
       expectedAnswer: "A complete answer should define the core concept, outline its implementation, explain trade-offs, and provide a real-world use case.",
-      strengths: ["Attempted to respond"],
+      strengths: ["None (Answer was too short)"],
       weaknesses: ["Answer is extremely brief or silent.", "No descriptive technical details provided."],
       suggestions: ["Speak clearly and in full sentences.", "Structure your answer: define → explain → example → trade-offs."],
       missingConcepts: ["Core definition", "Practical use-cases", "Underlying mechanics"],
-      improvedAnswer: "Please speak clearly into the microphone. A complete answer should define the core concepts, outline implementation, and explain trade-offs."
+      improvedAnswer: "Please speak clearly into the microphone and provide a detailed, technical response.",
+      nextQuestion: isLastQuestion ? undefined : "Can you elaborate on your previous experience?"
     };
   }
 
   if (ai) {
     try {
-      const prompt = `Act as an expert evaluator and data analyst. Your task is to ensure that the overall score is mathematically consistent with all the granular scores provided in the evaluation breakdown. All individual scores, such as technical accuracy, communication, and problem-solving, must be factored into the total score correctly without discrepancies.
+      const historyText = history && history.length > 0 
+        ? history.map((h, i) => `Q${i+1}: ${h.question}\nA${i+1}: ${h.answer}`).join("\n\n") 
+        : "None (This is the first question evaluated)";
+
+      const prompt = `Act as an expert evaluator, data analyst, and technical interviewer. Your task is to evaluate the candidate's answer and, if the interview is not over, dynamically generate the NEXT highly contextual interview question based on their performance.
 
 Interview Context:
 - Job Role: ${jobRole || "Software Developer"}
 - Experience Level: ${experienceLevel || "Intermediate"}
 - Candidate Skills: ${skills && skills.length > 0 ? skills.join(", ") : "General"}
 - Language: ${language}
+- Target Company: ${targetCompany || "General"}
 
-Question Asked: ${question}
+Conversation History So Far:
+${historyText}
+
+Current Question Asked: ${question}
 Candidate's Answer: ${answer}
 Answer Duration: ${duration} seconds
 Speaking Speed: ${speakingSpeed.toFixed(1)} words per minute
@@ -297,12 +311,13 @@ Evaluation Criteria:
 7. Problem Solving Score (0-10): Analytical thinking, approach structure, and solution quality.
 
 CRITICAL RULES:
-- MATHEMATICAL CONSISTENCY: The overall 'score' (0-100) MUST be a logical, weighted average of the sub-scores (Technical Accuracy, Communication, Confidence, Fluency). Do not output an overall score of 90 if the sub-scores are in the 50s.
+- MATHEMATICAL CONSISTENCY: The overall 'score' (0-100) MUST be a logical, weighted average of the sub-scores (Technical Accuracy, Communication, Confidence, Fluency).
 - If the candidate's answer is irrelevant, gibberish, very short, or simply asks to "repeat the question", you MUST score Technical Accuracy as 0, Problem Solving as 0, and note this in weaknesses.
-- Do NOT generate generic "A strong answer would define the concept..." text. Write a SPECIFIC, highly technical expected answer for the EXACT question asked.
-- The improvedAnswer MUST be a highly professional, technically deep rewrite of the candidate's attempt. If they didn't attempt it, write a strong first-person answer they COULD have used.
-
-Based on the evaluation, determine the interview Round (e.g., "Technical Round 1", "HR Round", "System Design Round").
+- The expectedAnswer MUST be SPECIFIC and highly technical for the EXACT question asked.
+- The improvedAnswer MUST be a VERY SHORT and CONCISE correction (maximum 2-3 sentences).
+- If isLastQuestion is false, you MUST generate the 'nextQuestion'. The next question should logically follow the evaluation (e.g., if they failed to explain a concept, ask a follow-up; if they passed, move to a harder or different concept). 
+- If isLastQuestion is true, 'nextQuestion' should be null.
+- isLastQuestion = ${isLastQuestion ? "true" : "false"}
 
 Provide:
 - strengths: at least 2 specific positive points (if they failed completely, put "None")
@@ -310,12 +325,13 @@ Provide:
 - suggestions: at least 2 actionable improvement tips
 - missingConcepts: specific technical keywords they failed to mention
 - expectedAnswer: SPECIFIC technical answer to the exact question (2-4 sentences, written as expert reference)
-- improvedAnswer: CRITICAL: Provide a VERY SHORT and CONCISE correction or improvement (maximum 2-3 sentences). Keep it brief, punchy, and directly to the point without writing long paragraphs.
+- improvedAnswer: CRITICAL: Provide a VERY SHORT and CONCISE correction or improvement (maximum 2-3 sentences).
+- nextQuestion: The spoken text of the next question to ask the candidate (or null if isLastQuestion is true). Ensure it is in ${language}.
 
 Also determine hiringRecommendation based on overall performance:
-- "Strong Hire": Score >= 85, excellent technical accuracy and communication
-- "Hire": Score >= 70, good performance with minor gaps
-- "Weak Hire": Score >= 55, average performance with notable gaps
+- "Strong Hire": Score >= 85
+- "Hire": Score >= 70
+- "Weak Hire": Score >= 55
 - "Reject": Score < 55, significant gaps in knowledge or communication
 
 Return a single JSON object with this exact shape:
@@ -373,6 +389,7 @@ Return ONLY the raw JSON string. Do not wrap in markdown tags or code blocks.`;
             suggestions: feedback.suggestions ?? [],
             missingConcepts: feedback.missingConcepts ?? [],
             improvedAnswer: feedback.improvedAnswer ?? "",
+            nextQuestion: feedback.nextQuestion,
           } as FeedbackResult;
         }
       }

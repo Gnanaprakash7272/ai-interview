@@ -36,14 +36,32 @@ export async function POST(
       return NextResponse.json({ error: "Response record invalid" }, { status: 404 });
     }
 
-    // 1. Grade the current answer with Gemini and Voice metrics
+    const pastResponses = await Response.find({ 
+      interviewId, 
+      answer: { $ne: "" } 
+    }).sort({ createdAt: 1 });
+
+    const isLastQuestion = (pastResponses.length + 1) >= interview.questionCount || forceEnd;
+
+    const history = pastResponses.map(r => ({
+      question: r.question,
+      answer: r.answer
+    }));
+
+    // 1. Grade the current answer and generate next question simultaneously
     const evaluation = await evaluateAnswer(
       currentResponse.question,
       answer,
       duration || 0,
       speakingSpeed || 0,
       hesitationCount || 0,
-      interview.language
+      interview.language,
+      interview.jobRole || interview.domain,
+      interview.difficulty,
+      interview.skills,
+      history,
+      isLastQuestion,
+      interview.targetCompany
     );
 
     // Save evaluation to response document
@@ -69,12 +87,8 @@ export async function POST(
     currentResponse.improvedAnswer = evaluation.improvedAnswer;
     await currentResponse.save();
 
-    // 2. Fetch all completed responses so far for history compilation
-    const completedResponses = await Response.find({ 
-      interviewId, 
-      answer: { $ne: "" } 
-    }).sort({ createdAt: 1 });
-
+    // 2. Add current response to pastResponses to form completedResponses
+    const completedResponses = [...pastResponses, currentResponse];
     const totalAnsweredCount = completedResponses.length;
 
     // 3. Determine if the interview has reached the question limit
@@ -163,26 +177,15 @@ export async function POST(
       });
 
     } else {
-      // Interview incomplete: Generate the next dynamic question
-      const conversationHistory = completedResponses.map(r => ({
-        question: r.question,
-        answer: r.answer
-      }));
+      // Interview incomplete: Use the nextQuestion generated during evaluation
+      let nextQuestionText = evaluation.nextQuestion;
 
-      const nextQuestionText = await generateNextConversationalQuestion(
-        interview.domain,
-        interview.difficulty,
-        interview.interviewType,
-        interview.language,
-        conversationHistory,
-        interview.resumeText,
-        interview.jobDescriptionText,
-        interview.targetCompany || "general",
-        interview.candidateName || "Candidate",
-        interview.skills || [],
-        interview.experienceLevel || interview.difficulty,
-        interview.questionCount
-      );
+      // Fallback just in case Gemini failed to generate nextQuestion
+      if (!nextQuestionText) {
+        nextQuestionText = interview.language === "ta" 
+          ? "நீங்கள் கூறியது புரிகிறது. இதன் தொழில்நுட்ப பயன்பாடு மற்றும் சவால்கள் பற்றி விரிவாக கூற முடியுமா?"
+          : "Interesting. Can you expand on the design choices, trade-offs, and any challenges you faced in this scenario?";
+      }
 
       // Create new pending Response document for the next question
       const nextResponse = await Response.create({
