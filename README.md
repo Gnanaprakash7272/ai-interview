@@ -20,20 +20,7 @@ With a sleek **Dark Mode** user interface, **Real-Time Speech Recognition**, and
 
 ---
 
-## 📸 Screenshots
 
-*(Replace these placeholders by adding your screenshots to the `public/screenshots/` folder)*
-
-### 1. Login & Authentication
-![Login Page](./public/screenshots/login.png)
-*Secure and seamless authentication with NextAuth.js and a beautiful clean UI.*
-
-
-*Manage your past interviews, view overall scores, and track your performance trends.*
-
-### 3. Sleek AI Interview Room
-![Interview Room](./public/screenshots/interview-room.png)
-*The highly immersive dark-mode interview workspace with voice-activated AI avatar and live webcam feed.*
 
 ---
 
