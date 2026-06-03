@@ -4,7 +4,7 @@ import React, { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Volume2, VolumeX, ArrowRight, Loader2, Award, Clock, ArrowLeft, Send, 
-  Video, VideoOff, Mic, MicOff, AlertCircle, Headphones, Cpu
+  Video, VideoOff, Mic, MicOff, AlertCircle, Headphones, Cpu, Bot, User
 } from "lucide-react";
 
 interface QuestionResponse {

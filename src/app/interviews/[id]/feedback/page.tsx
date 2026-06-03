@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { 
   ChevronDown, ChevronUp, CheckCircle, AlertTriangle, ArrowLeft, Loader2, 
   RefreshCw, Star, Info, MessageSquareCode, Award, Compass, BookOpen, Clock, BarChart2,
-  ThumbsUp, ThumbsDown, Lightbulb, Target, FileCheck, Briefcase
+  ThumbsUp, ThumbsDown, Lightbulb, Target, FileCheck, Briefcase, Bot, User
 } from "lucide-react";
 
 interface ResponseFeedback {
