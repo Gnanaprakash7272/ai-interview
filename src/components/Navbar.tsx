@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, BarChart3, LayoutDashboard, User, Award, Menu, X } from "lucide-react";
+import { LogOut, BarChart3, LayoutDashboard, User, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 export default function Navbar() {
@@ -26,8 +27,8 @@ export default function Navbar() {
     <nav className="glass-navbar">
       <div className="container flex-between nav-container">
         <Link href="/" className="logo-container">
-          <Award className="logo-icon" size={24} />
-          <span className="logo-text">Interview<span className="logo-highlight">AI</span></span>
+          <Image src="/logo.png" alt="Mockora.ai Logo" width={32} height={32} className="logo-image" />
+          <span className="logo-text">Mockora<span className="logo-highlight">.ai</span></span>
         </Link>
 
         {/* Desktop Menu */}
@@ -150,9 +151,9 @@ export default function Navbar() {
           text-decoration: none;
         }
 
-        .logo-icon {
-          color: var(--primary);
-          filter: drop-shadow(0 0 8px var(--primary-glow));
+        .logo-image {
+          border-radius: 4px;
+          object-fit: contain;
         }
 
         .logo-text {

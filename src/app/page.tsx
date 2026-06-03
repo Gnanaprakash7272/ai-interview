@@ -126,7 +126,7 @@ export default async function Home() {
 
       {/* Footer */}
       <footer className="footer container">
-        <p>© {new Date().getFullYear()} InterviewAI. Designed for developers. Built with Google Gemini.</p>
+        <p>© {new Date().getFullYear()} Mockora.ai. Designed for developers. Built with Google Gemini.</p>
       </footer>
     </div>
   );

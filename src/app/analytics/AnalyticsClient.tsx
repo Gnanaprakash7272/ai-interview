@@ -31,7 +31,7 @@ export default function AnalyticsClient({ radarData, trendData, analytics, inter
 
       {/* A4 Printable Report Header */}
       <div className="print-only report-header" style={{ display: 'none' }}>
-        <h2>InterviewAI Performance Report</h2>
+        <h2>Mockora.ai Performance Report</h2>
         <p>Generated on: {new Date().toLocaleDateString()}</p>
       </div>
 

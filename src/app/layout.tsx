@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InterviewAI - Prep Platform",
+  title: "Mockora.ai - Prep Platform",
   description: "Master technical interviews with instant AI feedback, deep performance analytics, and dynamic study recommendations powered by Gemini.",
 };
 
