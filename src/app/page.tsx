@@ -34,15 +34,10 @@ export default async function Home() {
               <ArrowRight size={18} />
             </Link>
           ) : (
-            <>
-              <Link href="/register" className="btn btn-primary btn-lg">
-                <span>Start Free Practice</span>
-                <ArrowRight size={18} />
-              </Link>
-              <Link href="/login" className="btn btn-secondary btn-lg">
-                <span>Log In</span>
-              </Link>
-            </>
+            <Link href="/register" className="btn btn-primary btn-lg">
+              <span>Start Free Practice</span>
+              <ArrowRight size={18} />
+            </Link>
           )}
         </div>
       </section>
