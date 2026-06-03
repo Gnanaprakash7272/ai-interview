@@ -106,6 +106,30 @@ export default function NewInterview() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
 
+  // Fetch candidate profile to pre-fill fields
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("/api/users/profile");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            if (data.user.name) setCandidateName(data.user.name);
+            if (data.user.skills && data.user.skills.length > 0) setSkillsInput(data.user.skills.join(", "));
+            if (data.user.experienceLevel) setExperienceLevel(data.user.experienceLevel);
+            if (data.user.resumeText) {
+              setResumeText(data.user.resumeText);
+              setShowResumeInput(true);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   // Cycle through loading steps to keep user wowed
   useEffect(() => {
     let interval: any;

@@ -16,6 +16,13 @@ export default async function Dashboard() {
   const userId = (session.user as any).id;
   await dbConnect();
 
+  // Fetch user to check onboarding status
+  const User = (await import("@/models/User")).default;
+  const user = await User.findById(userId);
+  if (!user || !user.isProfileComplete) {
+    redirect("/onboarding");
+  }
+
   // Fetch interviews
   const interviews = await Interview.find({ userId }).sort({ createdAt: -1 });
 

@@ -22,6 +22,22 @@ const UserSchema = new Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    skills: {
+      type: [String],
+      default: [],
+    },
+    experienceLevel: {
+      type: String,
+      default: "fresher",
+    },
+    resumeText: {
+      type: String,
+      default: "",
+    },
+    isProfileComplete: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
