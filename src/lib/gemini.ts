@@ -59,9 +59,11 @@ export async function generateNextConversationalQuestion(
   targetCompany?: string,
   candidateName?: string,
   skills?: string[],
-  experienceLevel?: string
+  experienceLevel?: string,
+  totalQuestions?: number
 ): Promise<string> {
   const isFirstQuestion = history.length === 0;
+  const currentQuestionNumber = history.length + 1;
 
   // Retrieve company specific parameters if any
   const companyKey = targetCompany?.toLowerCase() || "general";
@@ -89,6 +91,47 @@ Candidate Profile:
 - Skills / Tech Stack: ${skills && skills.length > 0 ? skills.join(", ") : "General"}
 `;
 
+  // Build round-wise progression instructions
+  let roundInstructions = "";
+  if (totalQuestions && totalQuestions >= 3) {
+    const isMixed = interviewType.toLowerCase().includes("mixed");
+    const isTech = interviewType.toLowerCase().includes("technical");
+    
+    if (isMixed) {
+      const techQ = Math.ceil(totalQuestions * 0.4);
+      const designQ = Math.ceil(totalQuestions * 0.3);
+      if (currentQuestionNumber <= techQ) {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 1 - Core Technical/Coding. Focus strictly on coding logic, problem-solving, algorithms, or language-specific concepts.";
+      } else if (currentQuestionNumber <= techQ + designQ) {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 2 - System Design & Architecture. Focus on scaling, databases, architectural trade-offs, or advanced framework concepts.";
+      } else {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 3 - HR & Behavioral. Focus on culture fit, leadership, situational scenarios (STAR method), and behavioral questions.";
+      }
+    } else if (isTech) {
+      const basicsQ = Math.max(1, Math.floor(totalQuestions * 0.33));
+      const algoQ = Math.max(1, Math.floor(totalQuestions * 0.33));
+      if (currentQuestionNumber <= basicsQ) {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 1 - Core Fundamentals. Focus on language basics, OOPs, database basics, and core concepts.";
+      } else if (currentQuestionNumber <= basicsQ + algoQ) {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 2 - Advanced Data Structures & Algorithms. Focus on complex problem solving, performance, and complexity.";
+      } else {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 3 - System Design & Best Practices. Focus on architectural design, scalability, and code maintainability.";
+      }
+    } else {
+      const pastQ = Math.max(1, Math.floor(totalQuestions * 0.33));
+      const sitQ = Math.max(1, Math.floor(totalQuestions * 0.33));
+      if (currentQuestionNumber <= pastQ) {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 1 - Introduction & Past Experience. Focus on resume walkthrough, past projects, and role fit.";
+      } else if (currentQuestionNumber <= pastQ + sitQ) {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 2 - Behavioral & Situational. Focus on conflict resolution, time management, and hypothetical scenarios.";
+      } else {
+        roundInstructions = "CURRENT INTERVIEW STAGE: Round 3 - Company Fit & Motivation. Focus on why they want to join, their long-term goals, and alignment with company culture.";
+      }
+    }
+    
+    roundInstructions += `\nCRITICAL RULE: If the user just transitioned into a NEW round, you MUST explicitly announce the transition gracefully in your spoken text. E.g., "Great, let's move on to the System Design round..."`;
+  }
+
   if (ai) {
     try {
       let prompt = "";
@@ -102,12 +145,14 @@ Language: ${language} (respond strictly in the selected language. If it is 'ta' 
 
 ${companyPrompt}
 
+${roundInstructions}
+
 ${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
 ${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
 
 Since this is the FIRST question:
 1. Welcome the candidate briefly (1 sentence) addressing them by name${companyInfo && companyKey !== "general" ? `, and mention that they are interviewing for ${companyInfo.name}` : ""}.
-2. Identify the appropriate interview round (e.g., Technical Round 1, HR Round, etc.) based on the interview type.
+2. Explicitly announce that you are starting the first round as per the CURRENT INTERVIEW STAGE.
 3. Ask a highly relevant first interview question tailored specifically to the candidate's skills and experience level. If a resume is provided, ask about a specific project or skill on it. If skills are provided, ask about one of their listed skills.
 
 Output ONLY the final spoken recruiter message. Do not include any HTML, markdown, tags, or JSON.`;
@@ -122,6 +167,8 @@ Language: ${language} (respond strictly in the selected language. If it is 'ta' 
 
 ${companyPrompt}
 
+${roundInstructions}
+
 ${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
 ${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
 
@@ -131,10 +178,9 @@ ${historyText}
 Generate the NEXT conversational follow-up question.
 Guidelines:
 1. Address ${candidateName || "the candidate"} by name occasionally to keep it natural.
-2. Read the candidate's last answer. If they provided a vague or incomplete answer, ask a follow-up digging deeper into their technical choice or explanation (e.g., "Why did you use that approach instead of X?").
-3. If their answer was complete, move on to the next logical concept or behavioral scenario that fits ${companyInfo && companyKey !== "general" ? `${companyInfo.name}'s typical` : "the target"} interview style and the candidate's skills.
-4. Keep the conversation extremely natural, like a real human recruiter.
-5. Output ONLY the final spoken recruiter question. Do not include any tags, markdown, or JSON.`;
+2. Read the candidate's last answer. If they provided a vague or incomplete answer, ask a follow-up digging deeper into their technical choice or explanation.
+3. Keep the conversation extremely natural, like a real human recruiter.
+4. Output ONLY the final spoken recruiter question. Do not include any tags, markdown, or JSON.`;
       }
 
       const response = await ai.models.generateContent({

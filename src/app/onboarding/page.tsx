@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, User, Wrench, Briefcase, FileText, CheckCircle } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
 const EXPERIENCE_LEVELS = [
   { id: "fresher", name: "Fresher / Entry Level", desc: "0–1 year. Basic concepts, internship projects, academic work." },
@@ -22,6 +21,9 @@ export default function OnboardingPage() {
   const [experienceLevel, setExperienceLevel] = useState("fresher");
   const [resumeText, setResumeText] = useState("");
   const [error, setError] = useState("");
+  const [fileLoading, setFileLoading] = useState(false);
+  const [showManualText, setShowManualText] = useState(false);
+  const [fileName, setFileName] = useState("");
 
   useEffect(() => {
     // Fetch existing user data to pre-fill name (or if they partially completed)
@@ -55,6 +57,47 @@ export default function OnboardingPage() {
     };
     fetchUser();
   }, [router]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setError("Please upload a valid PDF file.");
+      return;
+    }
+
+    setFileLoading(true);
+    setError("");
+    setFileName(file.name);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/parse-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to parse PDF");
+      }
+
+      const data = await res.json();
+      if (data.text) {
+        setResumeText(data.text);
+        // Automatically hide the manual text box if it was open
+        setShowManualText(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to extract text from PDF. You can paste it manually.");
+      setShowManualText(true);
+    } finally {
+      setFileLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +144,6 @@ export default function OnboardingPage() {
 
   return (
     <>
-      <Navbar />
       <div className="onboarding-wrapper container animate-fade-in">
         <div className="app-bg-glow"></div>
         
@@ -178,17 +220,85 @@ export default function OnboardingPage() {
 
             {/* Resume */}
             <div className="form-group">
-              <label htmlFor="resume" className="form-label">
+              <label className="form-label">
                 <FileText size={16} />
-                <span>Paste Resume (Optional)</span>
+                <span>Upload Resume (PDF only) - Optional</span>
               </label>
-              <textarea
-                id="resume"
-                className="form-input custom-textarea"
-                value={resumeText}
-                onChange={(e) => setResumeText(e.target.value)}
-                placeholder="Paste your resume text here... The AI recruiter will ask deep-dive questions based on your projects and experience."
-              />
+
+              {!showManualText ? (
+                <div className="file-upload-zone">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileUpload}
+                    className="file-input-hidden"
+                    id="resume-upload"
+                    disabled={fileLoading}
+                  />
+                  <label htmlFor="resume-upload" className="file-upload-label">
+                    {fileLoading ? (
+                      <div className="upload-content">
+                        <Loader2 className="animate-spin primary-color mb-2" size={32} />
+                        <span className="upload-title">Extracting Text...</span>
+                        <span className="upload-subtitle">Please wait while we read your resume</span>
+                      </div>
+                    ) : fileName ? (
+                      <div className="upload-content success-state">
+                        <CheckCircle className="success-color mb-2" size={32} />
+                        <span className="upload-title">{fileName} uploaded successfully!</span>
+                        <span className="upload-subtitle">Text extracted and ready for AI analysis.</span>
+                      </div>
+                    ) : (
+                      <div className="upload-content">
+                        <div className="upload-icon-wrapper mb-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="primary-color"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        </div>
+                        <span className="upload-title">Click to upload your resume</span>
+                        <span className="upload-subtitle">Supported formats: PDF (Max 5MB)</span>
+                      </div>
+                    )}
+                  </label>
+                  
+                  {fileName && (
+                    <button 
+                      type="button" 
+                      className="text-btn toggle-manual-btn mt-3"
+                      onClick={() => setShowManualText(true)}
+                    >
+                      View / Edit extracted text manually
+                    </button>
+                  )}
+                  {!fileName && (
+                    <button 
+                      type="button" 
+                      className="text-btn toggle-manual-btn mt-3"
+                      onClick={() => setShowManualText(true)}
+                    >
+                      Or paste text manually
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="manual-text-zone">
+                  <div className="manual-text-header">
+                    <span className="form-hint">Edit your extracted text below or paste it manually.</span>
+                    <button 
+                      type="button" 
+                      className="text-btn small-btn"
+                      onClick={() => setShowManualText(false)}
+                    >
+                      Cancel / Back to Upload
+                    </button>
+                  </div>
+                  <textarea
+                    id="resume"
+                    className="form-input custom-textarea"
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                    placeholder="Paste your resume text here... The AI recruiter will ask deep-dive questions based on your projects and experience."
+                  />
+                </div>
+              )}
             </div>
 
             <button type="submit" className="btn btn-primary submit-btn" disabled={submitting}>
@@ -366,6 +476,106 @@ export default function OnboardingPage() {
             height: 50px;
             margin-top: 12px;
             font-size: 15px;
+          }
+
+          /* File Upload Styles */
+          .file-upload-zone {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+          }
+
+          .file-input-hidden {
+            display: none;
+          }
+
+          .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            background: rgba(15, 23, 42, 0.02);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            min-height: 160px;
+          }
+
+          .file-upload-label:hover {
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.04);
+          }
+
+          .file-upload-label:active {
+            transform: scale(0.99);
+          }
+
+          .upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .upload-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+          }
+
+          .upload-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+          }
+
+          .success-state {
+            color: var(--success);
+          }
+
+          .text-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            transition: all 0.2s;
+          }
+
+          .text-btn:hover {
+            text-decoration-color: var(--primary);
+          }
+
+          .small-btn {
+            font-size: 12px;
+          }
+
+          .toggle-manual-btn {
+            align-self: flex-start;
+          }
+
+          .manual-text-zone {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: fadeIn 0.3s ease;
+          }
+
+          .manual-text-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
           }
         `}</style>
       </div>

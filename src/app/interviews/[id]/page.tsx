@@ -251,6 +251,88 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     return () => stopVisualizer();
   }, [isRecording, stream]);
 
+  // AI Simulated Voice Visualizer
+  const aiCanvasRef = useRef<HTMLCanvasElement>(null);
+  const aiAnimationFrameRef = useRef<number | null>(null);
+
+  const startAiVisualizer = () => {
+    const canvas = aiCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let time = 0;
+    const draw = () => {
+      aiAnimationFrameRef.current = requestAnimationFrame(draw);
+      // Faster time increment for snappier voice feel
+      time += 0.2; 
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const width = canvas.width;
+      const height = canvas.height;
+      const centerY = height / 2;
+
+      // Combine multiple sine waves for a Siri-like voice wave
+      const numWaves = 4;
+      for (let i = 0; i < numWaves; i++) {
+        ctx.beginPath();
+        
+        // Randomly modulate amplitude using Math.sin
+        const amplitudeMod = Math.sin(time * 0.3 + i * 1.5) * 0.6 + 0.4;
+        const baseAmplitude = (height / 2.2);
+        const amplitude = baseAmplitude * amplitudeMod;
+        
+        for (let x = 0; x < width; x++) {
+          const frequency = 0.03 + i * 0.015;
+          const phase = time * (1 + i * 0.3);
+          
+          // Gaussian envelope to keep waves centered horizontally
+          const centerDist = (x - width / 2) / (width / 3.5);
+          const envelope = Math.max(0, Math.exp(-centerDist * centerDist));
+          
+          const y = Math.sin(x * frequency + phase) * amplitude * envelope;
+          
+          if (x === 0) ctx.moveTo(x, centerY + y);
+          else ctx.lineTo(x, centerY + y);
+        }
+        
+        // Add vibrant colors
+        if (i === 0) ctx.strokeStyle = `rgba(139, 92, 246, 0.9)`; // Primary purple
+        else if (i === 1) ctx.strokeStyle = `rgba(59, 130, 246, 0.7)`; // Blue
+        else if (i === 2) ctx.strokeStyle = `rgba(236, 72, 153, 0.7)`; // Pink
+        else ctx.strokeStyle = `rgba(167, 139, 250, 0.4)`; // Light purple
+        
+        ctx.lineWidth = 2.5;
+        // Global composite operation for glow effect
+        ctx.globalCompositeOperation = 'screen';
+        ctx.stroke();
+      }
+    };
+    
+    if (aiAnimationFrameRef.current) cancelAnimationFrame(aiAnimationFrameRef.current);
+    draw();
+  };
+
+  const stopAiVisualizer = () => {
+    if (aiAnimationFrameRef.current) {
+      cancelAnimationFrame(aiAnimationFrameRef.current);
+      aiAnimationFrameRef.current = null;
+    }
+    if (aiCanvasRef.current) {
+      const ctx = aiCanvasRef.current.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, aiCanvasRef.current.width, aiCanvasRef.current.height);
+    }
+  };
+
+  useEffect(() => {
+    if (isSpeaking) {
+      startAiVisualizer();
+    } else {
+      stopAiVisualizer();
+    }
+    return () => stopAiVisualizer();
+  }, [isSpeaking]);
+
   // Dynamic TTS Speak question helper
   function speakQuestionText(text: string) {
     if (!window.speechSynthesis || !text) return;
@@ -622,7 +704,14 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
                 <span>{isSpeaking ? "Stop Audio" : "Listen Voice"}</span>
               </button>
             </div>
-            <p className="question-text">{currentResponse?.question}</p>
+            <div style={{ marginTop: "16px", padding: "12px", background: "rgba(15, 23, 42, 0.04)", borderRadius: "8px", border: "1px dashed var(--border)" }}>
+              <details style={{ cursor: "pointer" }}>
+                <summary style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", outline: "none" }}>
+                  View Question Transcript (For Accessibility)
+                </summary>
+                <p className="question-text" style={{ marginTop: "12px", fontSize: "16px" }}>{currentResponse?.question}</p>
+              </details>
+            </div>
           </div>
 
           {/* Answer Area */}
@@ -707,6 +796,11 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
                   <Cpu size={28} className="orb-cpu-icon" />
                 </div>
               </div>
+              
+              <div className={`ai-visualizer-wrapper ${isSpeaking ? 'active' : ''}`}>
+                <canvas ref={aiCanvasRef} width={280} height={50} className="ai-waveform-canvas" />
+              </div>
+
               <p className="avatar-status-text">
                 {isSpeaking ? "AI Recruiter is speaking..." : isRecording ? "Recruiter is listening..." : submitting ? "AI is processing answer..." : "Ready"}
               </p>
@@ -964,6 +1058,46 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
           line-height: 1.6;
           font-family: inherit;
           background: var(--bg-card);
+        }
+
+        .canvas-visualizer-container {
+          position: relative;
+          width: 100%;
+          height: 0;
+          opacity: 0;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          border: 1px solid transparent;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: -8px;
+        }
+
+        .answer-section:has(.speech-rec-btn.recording) .canvas-visualizer-container,
+        .canvas-visualizer-container:has(.visualizer-status-pulse) {
+          height: 60px;
+          opacity: 1;
+          margin-top: 0;
+          padding: 5px;
+          border-color: rgba(239, 68, 68, 0.2);
+          background: rgba(239, 68, 68, 0.02);
+        }
+
+        .audio-waveform-canvas {
+          width: 100%;
+          height: 100%;
+          filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.5));
+        }
+
+        .visualizer-status-pulse {
+          position: absolute;
+          top: 8px;
+          left: 12px;
+          font-size: 11px;
+          color: #ef4444;
+          font-weight: 600;
+          animation: pulse 1.5s infinite;
         }
 
         .word-indicator {
@@ -1298,6 +1432,27 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
           transform: scale(1.1);
           background: var(--primary-hover);
           box-shadow: 0 0 25px var(--primary);
+        }
+
+        /* AI Waveform Canvas */
+        .ai-visualizer-wrapper {
+          height: 0;
+          opacity: 0;
+          overflow: hidden;
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          justify-content: center;
+          margin-top: -10px;
+        }
+
+        .ai-visualizer-wrapper.active {
+          height: 50px;
+          opacity: 1;
+          margin-top: 10px;
+        }
+
+        .ai-waveform-canvas {
+          filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.6));
         }
 
         /* Listening Animation: green pulsing */

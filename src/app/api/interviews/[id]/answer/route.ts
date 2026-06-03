@@ -170,7 +170,11 @@ export async function POST(
         conversationHistory,
         interview.resumeText,
         interview.jobDescriptionText,
-        interview.targetCompany || "general"
+        interview.targetCompany || "general",
+        interview.candidateName || "Candidate",
+        interview.skills || [],
+        interview.experienceLevel || interview.difficulty,
+        interview.questionCount
       );
 
       // Create new pending Response document for the next question

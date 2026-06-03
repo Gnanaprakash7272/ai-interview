@@ -75,11 +75,11 @@ export async function POST(req: Request) {
       language || "en",
       [], // No history yet
       resumeText || "",
-      jobDescriptionText || "",
       targetCompany || "general",
       candidateName || "Candidate",
       skillsArray,
-      experienceLevel || difficulty
+      experienceLevel || difficulty,
+      count
     );
 
     // 3. Create the first Response record for the interview

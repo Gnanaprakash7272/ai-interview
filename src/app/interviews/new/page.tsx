@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { 
   Code2, Server, Compass, ClipboardList, Loader2, Award, Zap, 
   Cpu, BarChart2, ShieldAlert, FileText, Globe, UserCheck, Building2,
-  User, Wrench, Briefcase
+  User, Wrench, Briefcase, CheckCircle
 } from "lucide-react";
 import allCompanies from "@/data/allCompanies.json";
 
@@ -48,19 +48,24 @@ const EXPERIENCE_LEVELS = [
 const QUESTION_COUNTS = [3, 5];
 
 const COMPANIES = [
-  { id: "general", name: "General Mock", desc: "Standard recruiter guidelines and CS fundamentals." },
-  { id: "google", name: "Google", desc: "Heavy DSA algorithms, system design, complexity tradeoffs." },
-  { id: "amazon", name: "Amazon", desc: "Leadership principles, AWS cloud scaling, microservice resilience." },
-  { id: "microsoft", name: "Microsoft", desc: "OOP design, systems programming, thread safety, Azure patterns." },
-  { id: "tcs", name: "TCS", desc: "Core technical basics, Java/DBMS, SQL queries, SDLC models." },
-  { id: "infosys", name: "Infosys", desc: "Web dev fundamentals, database normalization, REST APIs, testing." },
-  { id: "zoho", name: "Zoho", desc: "C/Java dry runs, custom array/string logic, L2 OOP designs, and L3 systems." },
-  { id: "adobe", name: "Adobe", desc: "Advanced DSA, graphics rendering algorithms, system-level design." },
-  { id: "cisco", name: "Cisco", desc: "TCP/IP socket networks, operating systems, routing protocols." },
-  { id: "paypal", name: "PayPal", desc: "Transaction concurrency, distributed API scale, payment resilience." },
-  { id: "walmart", name: "Walmart", desc: "High-scale inventory systems, event-driven messaging (Kafka), Java microservices." },
-  { id: "accenture", name: "Accenture", desc: "Enterprise API integration, SDLC methods, and client scenarios." }
+  { id: "general", name: "General Mock", desc: "Standard recruiter guidelines and CS fundamentals.", domain: null },
+  { id: "google", name: "Google", desc: "Heavy DSA algorithms, system design, complexity tradeoffs.", domain: "google.com" },
+  { id: "amazon", name: "Amazon", desc: "Leadership principles, AWS cloud scaling, microservice resilience.", domain: "amazon.com" },
+  { id: "microsoft", name: "Microsoft", desc: "OOP design, systems programming, thread safety, Azure patterns.", domain: "microsoft.com" },
+  { id: "tcs", name: "TCS", desc: "Core technical basics, Java/DBMS, SQL queries, SDLC models.", domain: "tcs.com" },
+  { id: "infosys", name: "Infosys", desc: "Web dev fundamentals, database normalization, REST APIs, testing.", domain: "infosys.com" },
+  { id: "zoho", name: "Zoho", desc: "C/Java dry runs, custom array/string logic, L2 OOP designs, and L3 systems.", domain: "zoho.com" },
+  { id: "adobe", name: "Adobe", desc: "Advanced DSA, graphics rendering algorithms, system-level design.", domain: "adobe.com" },
+  { id: "cisco", name: "Cisco", desc: "TCP/IP socket networks, operating systems, routing protocols.", domain: "cisco.com" },
+  { id: "paypal", name: "PayPal", desc: "Transaction concurrency, distributed API scale, payment resilience.", domain: "paypal.com" },
+  { id: "walmart", name: "Walmart", desc: "High-scale inventory systems, event-driven messaging (Kafka), Java microservices.", domain: "walmart.com" },
+  { id: "accenture", name: "Accenture", desc: "Enterprise API integration, SDLC methods, and client scenarios.", domain: "accenture.com" }
 ];
+
+const getCompanyDomain = (name: string) => {
+  const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return `${cleanName}.com`;
+};
 
 const LOADING_STEPS = [
   "Analyzing selected recruiter guidelines...",
@@ -91,6 +96,9 @@ export default function NewInterview() {
   const [jobDescriptionText, setJobDescriptionText] = useState("");
   const [showResumeInput, setShowResumeInput] = useState(false);
   const [showJdInput, setShowJdInput] = useState(false);
+  const [fileLoading, setFileLoading] = useState(false);
+  const [showManualText, setShowManualText] = useState(false);
+  const [fileName, setFileName] = useState("");
 
   const isFeaturedSelected = COMPANIES.some(item => item.id === targetCompany);
   const customSelectedName = !isFeaturedSelected && targetCompany !== "general"
@@ -142,6 +150,45 @@ export default function NewInterview() {
     }
     return () => clearInterval(interval);
   }, [loading]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      alert("Please upload a valid PDF file.");
+      return;
+    }
+
+    setFileLoading(true);
+    setFileName(file.name);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/parse-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to parse PDF");
+      }
+
+      const data = await res.json();
+      if (data.text) {
+        setResumeText(data.text);
+        setShowManualText(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to extract text from PDF. You can paste it manually.");
+      setShowManualText(true);
+    } finally {
+      setFileLoading(false);
+    }
+  };
 
   const handleStart = async () => {
     setLoading(true);
@@ -267,8 +314,8 @@ export default function NewInterview() {
       <div className="app-bg-glow"></div>
 
       <header className="setup-header">
-        <h1>AI Recruiter Setup</h1>
-        <p>Configure your mock session parameters to initialize the voice recruiter agent</p>
+        <h1>Personalize Your Interview</h1>
+        <p>Configure your target role, company, and difficulty to generate a dynamic interview session.</p>
       </header>
 
       <div className="setup-body">
@@ -386,8 +433,28 @@ export default function NewInterview() {
                   className={`selection-card glass-card ${isSelected ? "selected" : ""}`}
                 >
                   <div className="card-top-row">
-                    <div className="icon-badge">
-                      <Building2 size={20} />
+                    <div className="icon-badge company-logo-badge">
+                      {item.domain ? (
+                        <img 
+                          src={`https://www.google.com/s2/favicons?domain=${item.domain}&sz=128`}
+                          alt={`${item.name} logo`}
+                          className="company-logo"
+                          onError={(e) => {
+                            // Fallback to building icon if logo fails to load
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      ) : (
+                        <Building2 size={20} />
+                      )}
+                      {/* Fallback icon container in case image fails */}
+                      {item.domain && (
+                        <div className="fallback-svg" style={{ display: 'none', alignItems: 'center', justifyContent: 'center' }}>
+                          <Building2 size={20} />
+                        </div>
+                      )}
                     </div>
                     {isSelected && <span className="active-dot animate-pulse-glow"></span>}
                   </div>
@@ -407,8 +474,20 @@ export default function NewInterview() {
                 className="selection-card glass-card selected custom-company-card animate-pulse-glow"
               >
                 <div className="card-top-row">
-                  <div className="icon-badge custom-selected">
-                    <Building2 size={20} />
+                  <div className="icon-badge company-logo-badge custom-selected">
+                    <img 
+                      src={`https://www.google.com/s2/favicons?domain=${getCompanyDomain(customSelectedName)}&sz=128`}
+                      alt={`${customSelectedName} logo`}
+                      className="company-logo"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                    <div className="fallback-svg" style={{ display: 'none', alignItems: 'center', justifyContent: 'center' }}>
+                      <Building2 size={20} />
+                    </div>
                   </div>
                   <span className="active-dot animate-pulse-glow"></span>
                 </div>
@@ -447,6 +526,21 @@ export default function NewInterview() {
                       }}
                       className="search-dropdown-item"
                     >
+                      <div className="dropdown-logo-wrapper">
+                        <img 
+                          src={`https://www.google.com/s2/favicons?domain=${getCompanyDomain(comp.name)}&sz=32`}
+                          alt=""
+                          className="dropdown-company-logo"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                        <div className="fallback-svg" style={{ display: 'none', alignItems: 'center', justifyContent: 'center' }}>
+                          <Building2 size={12} />
+                        </div>
+                      </div>
                       {comp.name}
                     </button>
                   ))}
@@ -586,15 +680,81 @@ export default function NewInterview() {
                   </button>
                   
                   {showResumeInput && (
-                    <div className="tailor-input-wrapper">
-                      <label className="form-label" htmlFor="resume-text">Paste Resume Text</label>
-                      <textarea
-                        id="resume-text"
-                        className="form-input custom-textarea"
-                        placeholder="Paste your resume/CV text here. AI Recruiter will ask specific questions about your experience, tools, and certifications..."
-                        value={resumeText}
-                        onChange={(e) => setResumeText(e.target.value)}
-                      ></textarea>
+                    <div className="tailor-input-wrapper mt-3">
+                      {!showManualText ? (
+                        <div className="file-upload-zone">
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={handleFileUpload}
+                            className="file-input-hidden"
+                            id="resume-upload"
+                            disabled={fileLoading}
+                          />
+                          <label htmlFor="resume-upload" className="file-upload-label">
+                            {fileLoading ? (
+                              <div className="upload-content">
+                                <Loader2 className="animate-spin primary-color mb-2" size={32} />
+                                <span className="upload-title">Extracting Text...</span>
+                                <span className="upload-subtitle">Please wait while we read your resume</span>
+                              </div>
+                            ) : fileName ? (
+                              <div className="upload-content success-state">
+                                <CheckCircle className="success-color mb-2" size={32} />
+                                <span className="upload-title">{fileName} uploaded successfully!</span>
+                                <span className="upload-subtitle">Text extracted and ready for AI analysis.</span>
+                              </div>
+                            ) : (
+                              <div className="upload-content">
+                                <div className="upload-icon-wrapper mb-2">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="primary-color"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                </div>
+                                <span className="upload-title">Click to upload your resume</span>
+                                <span className="upload-subtitle">Supported formats: PDF (Max 5MB)</span>
+                              </div>
+                            )}
+                          </label>
+                          
+                          {fileName && (
+                            <button 
+                              type="button" 
+                              className="text-btn toggle-manual-btn mt-3"
+                              onClick={() => setShowManualText(true)}
+                            >
+                              View / Edit extracted text manually
+                            </button>
+                          )}
+                          {!fileName && (
+                            <button 
+                              type="button" 
+                              className="text-btn toggle-manual-btn mt-3"
+                              onClick={() => setShowManualText(true)}
+                            >
+                              Or paste text manually
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="manual-text-zone">
+                          <div className="manual-text-header">
+                            <span className="form-hint">Edit your extracted text below or paste it manually.</span>
+                            <button 
+                              type="button" 
+                              className="text-btn small-btn"
+                              onClick={() => setShowManualText(false)}
+                            >
+                              Cancel / Back to Upload
+                            </button>
+                          </div>
+                          <textarea
+                            id="resume-text"
+                            className="form-input custom-textarea"
+                            value={resumeText}
+                            onChange={(e) => setResumeText(e.target.value)}
+                            placeholder="Paste your resume text here... The AI recruiter will ask deep-dive questions based on your projects and experience."
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -629,7 +789,7 @@ export default function NewInterview() {
             {/* Launch Button */}
             <div className="launch-section">
               <button onClick={handleStart} className="btn btn-primary start-session-btn animate-pulse-glow">
-                <span>Start Mock Recruiter Session</span>
+                <span>Launch Mock Interview</span>
                 <Award size={18} />
               </button>
             </div>
@@ -890,19 +1050,40 @@ export default function NewInterview() {
         }
 
         .search-dropdown-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
           width: 100%;
-          padding: 12px 18px;
+          padding: 12px 16px;
+          text-align: left;
           background: transparent;
           border: none;
           color: var(--text-main);
-          font-size: 14px;
-          text-align: left;
           cursor: pointer;
-          border-radius: var(--radius-sm);
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          font-size: 0.95rem;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          transition: background 0.2s ease;
+        }
+
+        .dropdown-logo-wrapper {
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          background: #fff;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .dropdown-company-logo {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+
+        .search-dropdown-item:hover {
+          background: rgba(15, 23, 42, 0.05);
         }
 
         .search-dropdown-item::after {
@@ -963,12 +1144,32 @@ export default function NewInterview() {
           justify-content: center;
           color: var(--text-main);
           transition: all 0.2s ease;
+          overflow: hidden;
+        }
+
+        .company-logo {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          padding: 4px;
+        }
+
+        .fallback-icon .fallback-svg {
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
         }
 
         .selection-card.selected .icon-badge {
           background: var(--primary);
           color: #fff;
           border-color: var(--primary-hover);
+        }
+
+        .selection-card.selected .company-logo {
+          background: #fff;
+          border-radius: var(--radius-sm);
+          padding: 2px;
         }
 
         .active-dot {
@@ -1199,6 +1400,106 @@ export default function NewInterview() {
         @keyframes slideDown {
           from { opacity: 0; transform: translateY(-8px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* File Upload Styles */
+        .file-upload-zone {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+        }
+
+        .file-input-hidden {
+          display: none;
+        }
+
+        .file-upload-label {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 32px 24px;
+          background: rgba(15, 23, 42, 0.02);
+          border: 2px dashed var(--border);
+          border-radius: var(--radius-md);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-align: center;
+          min-height: 160px;
+        }
+
+        .file-upload-label:hover {
+          border-color: var(--primary);
+          background: rgba(15, 23, 42, 0.04);
+        }
+
+        .file-upload-label:active {
+          transform: scale(0.99);
+        }
+
+        .upload-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .upload-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text-main);
+        }
+
+        .upload-subtitle {
+          font-size: 13px;
+          color: var(--text-muted);
+        }
+
+        .success-state {
+          color: var(--success);
+        }
+
+        .text-btn {
+          background: none;
+          border: none;
+          color: var(--primary);
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          padding: 0;
+          text-decoration: underline;
+          text-decoration-color: transparent;
+          transition: all 0.2s;
+        }
+
+        .text-btn:hover {
+          text-decoration-color: var(--primary);
+        }
+
+        .small-btn {
+          font-size: 12px;
+        }
+
+        .toggle-manual-btn {
+          align-self: flex-start;
+        }
+
+        .manual-text-zone {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          animation: fadeIn 0.3s ease;
+        }
+
+        .manual-text-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
 
         .custom-textarea {
