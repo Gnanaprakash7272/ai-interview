@@ -28,8 +28,8 @@ With a sleek **Dark Mode** user interface, **Real-Time Speech Recognition**, and
 ![Login Page](./public/screenshots/login.png)
 *Secure and seamless authentication with NextAuth.js and a beautiful clean UI.*
 
-### 2. Candidate Dashboard
-![Candidate Dashboard](./public/screenshots/dashboard.png)
+### 2. Dashboard
+![Dashboard](./public/screenshots/dashboard.png)
 *Manage your past interviews, view overall scores, and track your performance trends.*
 
 ### 3. Sleek AI Interview Room

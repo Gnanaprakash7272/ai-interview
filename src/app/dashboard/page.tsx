@@ -39,7 +39,7 @@ export default async function Dashboard() {
       {/* Header */}
       <header className="dashboard-header">
         <div>
-          <h1>Candidate Dashboard</h1>
+          <h1>Dashboard</h1>
           <p>Track your technical interview readiness and improve daily</p>
         </div>
         <Link href="/interviews/new" className="btn btn-primary">
