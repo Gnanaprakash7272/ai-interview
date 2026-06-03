@@ -114,6 +114,7 @@ export default async function Home() {
                 <div className="mock-bar highlight" style={{ height: "95%", "--delay": "0.5s" } as any}>
                   <div className="bar-glow-dot"></div>
                 </div>
+              </div>
             </div>
           </div>
         </div>
