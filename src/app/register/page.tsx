@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Mail, Lock, User, Loader2, ArrowRight } from "lucide-react";
+import LogoImage from "@/assets/logo.png";
 
 export default function Register() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function Register() {
       
       <div className="auth-card glass-card">
         <div className="auth-header">
-          <img src="/mockora-logo.png" alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
+          <Image src={LogoImage} alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
           <h1>Create Account</h1>
           <p>Begin your AI-powered interview prep today</p>
         </div>

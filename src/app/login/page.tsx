@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import LogoImage from "@/assets/logo.png";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Mail, Lock, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
@@ -55,7 +56,7 @@ function LoginForm() {
   return (
     <div className="auth-card glass-card">
       <div className="auth-header">
-        <img src="/mockora-logo.png" alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
+        <Image src={LogoImage} alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
         <h1>Welcome Back</h1>
         <p>Log in to resume your technical preparation</p>
       </div>

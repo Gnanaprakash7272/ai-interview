@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { LogOut, BarChart3, LayoutDashboard, User, Menu, X } from "lucide-react";
+import LogoImage from "@/assets/logo.png";
 import { useState } from "react";
 
 export default function Navbar() {
@@ -27,7 +28,7 @@ export default function Navbar() {
     <nav className="glass-navbar">
       <div className="container flex-between nav-container">
         <Link href="/" className="logo-container">
-          <img src="/mockora-logo.png" alt="Mockora.ai Logo" width={48} height={48} className="logo-image" />
+          <Image src={LogoImage} alt="Mockora.ai Logo" width={48} height={48} className="logo-image" />
           <span className="logo-text">Mockora<span className="logo-highlight">.ai</span></span>
         </Link>
 
