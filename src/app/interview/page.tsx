@@ -17,6 +17,8 @@ import {
   Send,
   Bot
 } from "lucide-react";
+import Image from "next/image";
+import AIAvatar from "@/assets/ai-avatar.png";
 
 interface QuestionItem {
   id: string;
@@ -384,8 +386,8 @@ function InterviewRoomContent() {
               </div>
               
               <div className="ai-center-visual">
-                <div className={`ai-cpu-icon ${isAiSpeaking ? 'speaking' : ''}`}>
-                  <Cpu size={32} />
+                <div className={`ai-avatar-circle ${isAiSpeaking ? 'speaking' : ''}`}>
+                  <Image src={AIAvatar} alt="AI Recruiter Avatar" className="ai-avatar-img" />
                 </div>
                 <div className={`waveform-visualizer ${isAiSpeaking ? 'active' : ''}`}>
                   <svg viewBox="0 0 200 40" className="waveform-svg">
@@ -556,14 +558,20 @@ function InterviewRoomContent() {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           gap: 20px; transform: translateY(-20px);
         }
-        .ai-cpu-icon {
-          width: 80px; height: 80px; border-radius: 50%; border: 2px solid rgba(139, 92, 246, 0.3);
-          display: flex; align-items: center; justify-content: center; color: #a78bfa;
+        .ai-avatar-circle {
+          width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(139, 92, 246, 0.3);
+          display: flex; align-items: center; justify-content: center;
           background: rgba(139, 92, 246, 0.1); transition: all 0.3s;
+          overflow: hidden;
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
-        .ai-cpu-icon.speaking {
-          border-color: #a78bfa; color: white;
-          box-shadow: 0 0 30px rgba(139, 92, 246, 0.6), inset 0 0 20px rgba(139, 92, 246, 0.4);
+        .ai-avatar-circle.speaking {
+          border-color: #a78bfa;
+          box-shadow: 0 0 40px rgba(139, 92, 246, 0.6), inset 0 0 20px rgba(139, 92, 246, 0.4);
+          transform: scale(1.05);
+        }
+        .ai-avatar-img {
+          width: 100%; height: 100%; object-fit: cover;
         }
 
         .waveform-visualizer { width: 240px; height: 40px; opacity: 0.3; transition: opacity 0.3s; }
