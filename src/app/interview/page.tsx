@@ -61,6 +61,7 @@ function InterviewRoomContent() {
   const [isRecording, setIsRecording] = useState(false);
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState("");
   const [isMuted, setIsMuted] = useState(false);
   
   // Timer states
@@ -123,13 +124,19 @@ function InterviewRoomContent() {
     let stream: MediaStream | null = null;
     const startCamera = async () => {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("Camera requires HTTPS or localhost.");
+        }
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          // Explicitly try to play the video to ensure it starts
+          videoRef.current.play().catch(e => console.error("Video play failed:", e));
         }
         setCameraActive(true);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Camera access denied", err);
+        setCameraError(err.message || "Camera access denied or missing permissions");
       }
     };
     if (!loading && !error) {
@@ -416,10 +423,20 @@ function InterviewRoomContent() {
                 </div>
               </div>
 
-              {!cameraActive && (
+              {!cameraActive && !cameraError && (
                 <div className="camera-placeholder">
                    <Loader2 size={24} className="animate-spin" />
                    <p>Starting Camera...</p>
+                </div>
+              )}
+              
+              {cameraError && (
+                <div className="camera-placeholder" style={{ color: '#ef4444' }}>
+                   <AlertCircle size={32} />
+                   <p style={{ fontWeight: 600 }}>{cameraError}</p>
+                   <p style={{ fontSize: 12, opacity: 0.8, textAlign: 'center', padding: '0 20px' }}>
+                     Please allow camera permissions or ensure you are using a secure connection (HTTPS / localhost).
+                   </p>
                 </div>
               )}
               
