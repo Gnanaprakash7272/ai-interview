@@ -692,151 +692,58 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
         </div>
       </header>
 
-      {/* Main Body Grid */}
-      <div className="room-body-grid">
+      {/* Main Video Call Grid */}
+      <div className="video-call-grid">
         
-        {/* Left Column: Question & Answer Form */}
-        <div className="room-main-panel">
-          
-          {/* Progress row */}
-          <div className="progress-indicator-row">
-            <span>Question {currentIndex + 1} (Recruiter conversational loop)</span>
-            <div className="progress-bar-track">
-              <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }}></div>
+        {/* Left/Top Tile: AI Recruiter */}
+        <div className="video-tile recruiter-tile glass-card">
+          <div className="tile-header">
+            <div className="tile-header-left">
+              <Bot size={16} />
+              <span>AI Recruiter</span>
             </div>
+            <span className={`status-badge-ai ${isSpeaking ? "status-speaking" : isRecording ? "status-listening" : submitting ? "status-thinking" : "status-idle"}`}>
+              {isSpeaking ? "Speaking" : isRecording ? "Listening" : submitting ? "Thinking" : "Idle"}
+            </span>
           </div>
 
-          {/* Question Box */}
-          <div className="glass-card question-box">
-            <div className="question-header">
-              <h3>AI Recruiter Speech</h3>
-              <button 
-                onClick={speakQuestion} 
-                className={`btn btn-secondary tts-btn ${isSpeaking ? "speaking animate-pulse-glow" : ""}`}
-                title="Hear Question"
-              >
-                {isSpeaking ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                <span>{isSpeaking ? "Stop Audio" : "Listen Voice"}</span>
-              </button>
-            </div>
-            <div style={{ marginTop: "16px", padding: "12px", background: "rgba(15, 23, 42, 0.04)", borderRadius: "8px", border: "1px dashed var(--border)" }}>
-              <details style={{ cursor: "pointer" }}>
-                <summary style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-muted)", outline: "none" }}>
-                  View Question Transcript (For Accessibility)
-                </summary>
-                <p className="question-text" style={{ marginTop: "12px", fontSize: "16px" }}>{currentResponse?.question}</p>
-              </details>
-            </div>
-          </div>
-
-          {/* Answer Area */}
-          <div className="answer-section">
-            <div className="answer-header-row">
-              <label className="form-label" htmlFor="answer-input">Your Spoken Answer</label>
-              
-              {/* Audio Dictation (Speech to Text) */}
-              <button
-                onClick={isRecording ? stopRecording : startRecording}
-                className={`btn speech-rec-btn ${isRecording ? "btn-danger recording animate-pulse-glow" : "btn-secondary"}`}
-                title={isRecording ? "Stop Dictation" : "Dictate Response"}
-              >
-                {isRecording ? <MicOff size={15} /> : <Mic size={15} />}
-                <span>{isRecording ? "Stop Recording" : "Record Answer"}</span>
-              </button>
-            </div>
-
-            <textarea
-              id="answer-input"
-              className="form-input answer-textarea glass-card"
-              placeholder="Typing is disabled. Click 'Record Answer' to speak your response directly into the microphone..."
-              value={currentAnswer}
-              onChange={(e) => handleAnswerChange(e.target.value)}
-              readOnly={true} // Enforce speech only
-            ></textarea>
-
-            {/* Canvas Visualizer */}
-            <div className="canvas-visualizer-container glass-card">
-              <canvas 
-                ref={canvasRef} 
-                width={500} 
-                height={50} 
-                className="audio-waveform-canvas"
-              />
-              {isRecording && <span className="visualizer-status-pulse">🎤 Recruiter is listening... Speak now</span>}
+          <div className="tile-body ai-body">
+            <div className={`orb-container ${isSpeaking ? "orb-speaking" : isRecording ? "orb-listening" : submitting ? "orb-thinking" : ""}`}>
+              <div className="orb-circle outer"></div>
+              <div className="orb-circle middle"></div>
+              <div className="orb-circle inner"></div>
+              <div className="orb-core">
+                <Cpu size={28} className="orb-cpu-icon" />
+              </div>
             </div>
             
-            <div className="word-indicator">
-              <span>{currentAnswer.trim() ? currentAnswer.trim().split(/\s+/).length : 0} words recorded</span>
-              <span>Speaking Duration: {activeDuration || 0} seconds</span>
-            </div>
-
-            <div className="voice-only-alert">
-              <AlertCircle size={14} />
-              <span>Voice replies only. Speech duration, speed, and filler words are evaluated.</span>
+            <div className={`ai-visualizer-wrapper ${isSpeaking ? 'active' : ''}`}>
+              <canvas ref={aiCanvasRef} width={280} height={50} className="ai-waveform-canvas" />
             </div>
           </div>
 
-          {/* Controls Footer */}
-          <footer className="action-row">
-            <div className="placeholder-btn"></div>
-            
-            <button 
-              onClick={handleAnswerSubmit} 
-              disabled={!currentAnswer.trim()}
-              className="btn btn-primary submit-btn animate-pulse-glow"
-            >
-              <span>{currentIndex + 1 >= responses.length ? "Finish & Get Report" : "Submit Answer"}</span>
-              <Send size={16} />
-            </button>
-          </footer>
+          <div className="live-captions-overlay">
+            <p className="caption-text recruiter-caption">
+              {currentResponse?.question || "Connecting..."}
+            </p>
+          </div>
         </div>
 
-        {/* Right Column: Live Camera & AI Recruiter Pane */}
-        <aside className="room-video-panel glass-card">
-          {/* AI Recruiter Avatar Card */}
-          <div className="recruiter-avatar-card glass-card">
-            <div className="avatar-card-header">
-              <h3>AI Recruiter</h3>
-              <span className={`status-badge-ai ${isSpeaking ? "status-speaking" : isRecording ? "status-listening" : submitting ? "status-thinking" : "status-idle"}`}>
-                {isSpeaking ? "Speaking" : isRecording ? "Listening" : submitting ? "Thinking" : "Idle"}
-              </span>
+        {/* Right/Bottom Tile: Candidate Webcam */}
+        <div className="video-tile candidate-tile glass-card">
+          <div className="tile-header">
+            <div className="tile-header-left">
+              <User size={16} />
+              <span>You (Candidate)</span>
             </div>
-            
-            <div className="avatar-pulse-body">
-              <div className={`orb-container ${isSpeaking ? "orb-speaking" : isRecording ? "orb-listening" : submitting ? "orb-thinking" : ""}`}>
-                <div className="orb-circle outer"></div>
-                <div className="orb-circle middle"></div>
-                <div className="orb-circle inner"></div>
-                <div className="orb-core">
-                  <Cpu size={28} className="orb-cpu-icon" />
-                </div>
-              </div>
-              
-              <div className={`ai-visualizer-wrapper ${isSpeaking ? 'active' : ''}`}>
-                <canvas ref={aiCanvasRef} width={280} height={50} className="ai-waveform-canvas" />
-              </div>
-
-              <p className="avatar-status-text">
-                {isSpeaking ? "AI Recruiter is speaking..." : isRecording ? "Recruiter is listening..." : submitting ? "AI is processing answer..." : "Ready"}
-              </p>
-            </div>
+            {stream ? (
+              <span className="status-badge status-active"><span className="ping-dot"></span> Live Webcam</span>
+            ) : (
+              <span className="status-badge status-inactive">Offline</span>
+            )}
           </div>
 
-          <div className="video-card-header candidate-feed-header">
-            <h3>Candidate Feed</h3>
-            <div className="video-status-dots">
-              {stream ? (
-                <span className="status-badge status-active">
-                  <span className="ping-dot"></span>
-                  Live Webcam
-                </span>
-              ) : (
-                <span className="status-badge status-inactive">Offline</span>
-              )}
-            </div>
-          </div>
-
-          <div className="video-viewfinder-wrapper">
+          <div className="tile-body user-body">
             {videoEnabled && stream ? (
               <video 
                 ref={videoRef}
@@ -851,43 +758,61 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
                 <p>Webcam preview is disabled</p>
               </div>
             )}
-            {mediaError && (
-              <div className="media-error-banner">
-                <p>{mediaError}</p>
-              </div>
-            )}
           </div>
 
-          <div className="video-controls-row">
-            <button 
-              className="btn btn-control btn-active"
-              title="Webcam is required"
-            >
-              <Video size={16} />
-              <span>Webcam (Compulsory)</span>
-            </button>
-
-            <button 
-              onClick={() => setAudioEnabled(!audioEnabled)}
-              className={`btn btn-control ${audioEnabled ? "btn-active" : "btn-disabled"}`}
-              title={audioEnabled ? "Disable Mic Preview" : "Enable Mic Preview"}
-            >
-              {audioEnabled ? <Mic size={16} /> : <MicOff size={16} />}
-              <span>Mic Access</span>
-            </button>
+          <div className="live-captions-overlay candidate-captions">
+            <div className="canvas-visualizer-container-mini">
+              <canvas ref={canvasRef} width={200} height={30} className="audio-waveform-canvas-mini" />
+            </div>
+            <p className="caption-text user-caption">
+              {currentAnswer || <em style={{ opacity: 0.5 }}>{isRecording ? "Listening..." : "Click Mic to speak..."}</em>}
+            </p>
           </div>
-
-          <div className="webcam-instructions">
-            <h4>💡 Recruiter Advice:</h4>
-            <ul>
-              <li>Explain your solutions clearly in the selected language.</li>
-              <li>Limit filler words like "umm" and "aaa" to score higher.</li>
-              <li>If you make a mistake, simply restate your thought.</li>
-            </ul>
-          </div>
-        </aside>
+        </div>
 
       </div>
+
+      {/* Bottom Meeting Control Bar */}
+      <footer className="meeting-control-bar glass-card">
+        <div className="control-left">
+          <div className="meeting-stats">
+            <span>Q{currentIndex + 1} of {responses.length}</span>
+            <span>•</span>
+            <span>{currentAnswer.trim() ? currentAnswer.trim().split(/\s+/).length : 0} words</span>
+            <span>•</span>
+            <span>{activeDuration || 0}s</span>
+          </div>
+        </div>
+
+        <div className="control-center">
+          <button 
+            onClick={isRecording ? stopRecording : startRecording} 
+            className={`meeting-icon-btn ${isRecording ? "btn-danger pulse-glow" : "btn-secondary"}`}
+            title={isRecording ? "Stop Dictation" : "Dictate Response"}
+          >
+            {isRecording ? <MicOff size={22} /> : <Mic size={22} />}
+          </button>
+          
+          <button 
+            onClick={speakQuestion} 
+            className={`meeting-icon-btn ${isSpeaking ? "btn-primary pulse-glow" : "btn-secondary"}`}
+            title="Hear Question"
+          >
+            {isSpeaking ? <VolumeX size={22} /> : <Volume2 size={22} />}
+          </button>
+        </div>
+
+        <div className="control-right">
+          <button 
+            onClick={handleAnswerSubmit} 
+            disabled={!currentAnswer.trim() || submitting}
+            className="meeting-submit-btn btn-primary"
+          >
+            <span>{submitting ? "Processing..." : (currentIndex + 1 >= responses.length ? "Finish & Get Report" : "Submit Answer")}</span>
+            <Send size={16} />
+          </button>
+        </div>
+      </footer>
 
       <style jsx>{`
         .room-wrapper {
