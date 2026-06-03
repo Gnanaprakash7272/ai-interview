@@ -9,6 +9,7 @@ export default async function Home() {
   return (
     <div className="home-wrapper">
       <div className="app-bg-glow"></div>
+      <div className="bg-grid-pattern"></div>
 
       {/* Hero Section */}
       <section className="hero container animate-fade-in">
