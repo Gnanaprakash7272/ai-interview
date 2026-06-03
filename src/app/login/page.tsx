@@ -55,7 +55,7 @@ function LoginForm() {
   return (
     <div className="auth-card glass-card">
       <div className="auth-header">
-        <Image src="/logo.png" alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
+        <Image src="/mockora-logo.png" alt="Mockora Logo" width={140} height={120} style={{ margin: "0 auto 16px auto", display: "block", objectFit: "contain" }} />
         <h1>Welcome Back</h1>
         <p>Log in to resume your technical preparation</p>
       </div>
