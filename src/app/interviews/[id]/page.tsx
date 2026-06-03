@@ -44,6 +44,9 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Webcam & Microphone State
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [videoEnabled, setVideoEnabled] = useState(true);
@@ -340,6 +343,7 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
+    utteranceRef.current = utterance; // Prevent garbage collection
     
     // Choose correct language code
     const langCodeMap: Record<string, string> = {
@@ -370,6 +374,17 @@ export default function InterviewRoom({ params }: { params: Promise<{ id: string
     
     setIsSpeaking(true);
     window.speechSynthesis.speak(utterance);
+
+    // Chrome bug workaround: periodic pause/resume if speech is very long
+    // This strictly ensures the speech doesn't randomly stop in the middle!
+    const resumeInfinity = setInterval(() => {
+      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      } else {
+        clearInterval(resumeInfinity);
+      }
+    }, 10000);
   }
 
   function speakQuestion() {
