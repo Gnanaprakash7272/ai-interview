@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { UserPlus, Mail, Lock, User, Loader2, ArrowRight } from "lucide-react";
+import { Mail, Lock, User, Loader2, ArrowRight } from "lucide-react";
 
 export default function Register() {
   const router = useRouter();
@@ -49,8 +50,8 @@ export default function Register() {
       
       <div className="auth-card glass-card">
         <div className="auth-header">
-          <div className="auth-logo-badge">
-            <UserPlus size={24} className="auth-logo-icon" />
+          <div className="auth-logo-badge" style={{ background: "transparent", border: "none", boxShadow: "none" }}>
+            <Image src="/logo.png" alt="Mockora Logo" width={56} height={56} className="auth-logo-image" />
           </div>
           <h1>Create Account</h1>
           <p>Begin your AI-powered interview prep today</p>
@@ -189,8 +190,9 @@ export default function Register() {
           box-shadow: var(--shadow-sm);
         }
 
-        .auth-logo-icon {
-          color: var(--primary);
+        .auth-logo-image {
+          border-radius: 12px;
+          object-fit: contain;
         }
 
         .auth-header h1 {

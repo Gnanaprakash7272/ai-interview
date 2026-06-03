@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { LogIn, Mail, Lock, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, Loader2, ArrowRight, CheckCircle2 } from "lucide-react";
 
 function LoginForm() {
   const router = useRouter();
@@ -54,8 +55,8 @@ function LoginForm() {
   return (
     <div className="auth-card glass-card">
       <div className="auth-header">
-        <div className="auth-logo-badge">
-          <LogIn size={24} className="auth-logo-icon" />
+        <div className="auth-logo-badge" style={{ background: "transparent", border: "none", boxShadow: "none" }}>
+          <Image src="/logo.png" alt="Mockora Logo" width={56} height={56} className="auth-logo-image" />
         </div>
         <h1>Welcome Back</h1>
         <p>Log in to resume your technical preparation</p>
@@ -175,8 +176,9 @@ function LoginForm() {
           box-shadow: var(--shadow-sm);
         }
 
-        .auth-logo-icon {
-          color: var(--primary);
+        .auth-logo-image {
+          border-radius: 12px;
+          object-fit: contain;
         }
 
         .auth-header h1 {
