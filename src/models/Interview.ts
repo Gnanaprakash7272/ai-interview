@@ -51,6 +51,10 @@ const InterviewSchema = new Schema(
       default: "general",
     },
     // Session state
+    workflowPlan: {
+      type: Schema.Types.Mixed, // Stores the InterviewWorkflowPlan JSON
+      default: null,
+    },
     status: {
       type: String,
       enum: ["pending", "completed"],
@@ -90,6 +94,15 @@ const InterviewSchema = new Schema(
     careerGuidance: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    // Agent pipeline fields (5-agent MNC simulator)
+    curatedQuestions: {
+      type: [Schema.Types.Mixed],
+      default: [],
+    },
+    questionSources: {
+      type: [String],
+      default: [],
     },
   },
   {

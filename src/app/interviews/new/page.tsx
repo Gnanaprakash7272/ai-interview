@@ -107,6 +107,17 @@ export default function NewInterview() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
 
+  // Pre-fill target company from URL query parameters (e.g. ?company=zoho)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const companyParam = params.get("company")?.toLowerCase();
+      if (companyParam && companyParam.trim() !== "") {
+        setTargetCompany(companyParam);
+      }
+    }
+  }, []);
+
   // Fetch candidate profile to pre-fill fields
   useEffect(() => {
     const fetchProfile = async () => {

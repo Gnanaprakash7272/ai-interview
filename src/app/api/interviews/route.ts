@@ -1,10 +1,16 @@
+/**
+ * POST /api/interviews
+ * Starts a new interview session via the Orchestrator:
+ *   Orchestrator → Search → Curator → Interview (welcome + Q1)
+ */
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Interview from "@/models/Interview";
 import Response from "@/models/Response";
-import { generateNextConversationalQuestion } from "@/lib/gemini";
+import { orchestrateSessionStart } from "@/lib/agents";
+import type { CandidateProfile } from "@/types/agents";
 
 export async function POST(req: Request) {
   try {
@@ -14,19 +20,11 @@ export async function POST(req: Request) {
     }
 
     await dbConnect();
-    const { 
-      domain, 
-      difficulty, 
-      interviewType, 
-      language, 
-      questionCount, 
-      resumeText, 
-      jobDescriptionText,
-      targetCompany,
-      // New candidate profile fields
-      candidateName,
-      skills,
-      experienceLevel
+
+    const {
+      domain, difficulty, interviewType, language, questionCount,
+      resumeText, jobDescriptionText, targetCompany,
+      candidateName, skills, experienceLevel,
     } = await req.json();
 
     if (!domain || !difficulty) {
@@ -36,87 +34,84 @@ export async function POST(req: Request) {
     const count = parseInt(questionCount) || 3;
     const userId = (session.user as any).id;
 
-    // Parse skills: accept both string (comma-separated) and array
     const skillsArray: string[] = Array.isArray(skills)
       ? skills
-      : (typeof skills === "string" && skills.trim())
+      : typeof skills === "string" && skills.trim()
         ? skills.split(",").map((s: string) => s.trim()).filter(Boolean)
         : [];
 
-    // 1. Create Interview session document with metadata
+    const profile: CandidateProfile = {
+      name: candidateName || "Candidate",
+      company: (targetCompany || "general").toLowerCase(),
+      role: domain.replace(/_/g, " "),
+      experienceLevel: (experienceLevel || difficulty) as CandidateProfile["experienceLevel"],
+      skills: skillsArray.join(", ") || "General",
+      resumeText: resumeText || "",
+      interviewType: (interviewType || "technical") as CandidateProfile["interviewType"],
+      difficulty: (difficulty || "medium") as CandidateProfile["difficulty"],
+      numQuestions: count,
+      language: language || "en",
+    };
+
+    // ── Orchestrator: Search → Curator → Interview ─────────────────────────
+    console.log(`[Orchestrator] Initiating pipeline for ${profile.name} @ ${profile.company}`);
+    const { workflowPlan, curatedQuestions, welcomeMessage, questionSources, ragCount, agentLog } =
+      await orchestrateSessionStart(profile);
+
+    agentLog.forEach((line) => console.log(line));
+
+    // ── Persist interview session ───────────────────────────────────────────
     const newInterview = await Interview.create({
-      userId,
-      domain,
-      difficulty,
+      userId, domain, difficulty,
       interviewType: interviewType || "technical",
       language: language || "en",
       resumeText: resumeText || "",
       jobDescriptionText: jobDescriptionText || "",
-      targetCompany: targetCompany || "general",
-      questionCount: count,
+      targetCompany: profile.company,
+      questionCount: curatedQuestions.length > 0 ? curatedQuestions.length : count,
       currentQuestionIndex: 0,
       status: "pending",
-      totalScore: 0,
-      confidenceScore: 0,
-      fluencyScore: 0,
-      // New candidate profile
-      candidateName: candidateName || "Candidate",
+      workflowPlan,
+      totalScore: 0, confidenceScore: 0, fluencyScore: 0,
+      candidateName: profile.name,
       skills: skillsArray,
-      experienceLevel: experienceLevel || difficulty,
+      experienceLevel: profile.experienceLevel,
       recommendations: [],
-      careerGuidance: {}
+      careerGuidance: {},
+      curatedQuestions,
+      questionSources,
     });
 
-    // 2. Generate the first recruiter welcome + question dynamically (personalized)
-    const firstQuestion = await generateNextConversationalQuestion(
-      domain,
-      difficulty,
-      interviewType || "technical",
-      language || "en",
-      [], // No history yet
-      resumeText || "",
-      jobDescriptionText || "",
-      targetCompany || "general",
-      candidateName || "Candidate",
-      skillsArray,
-      experienceLevel || difficulty,
-      count
-    );
-
-    // 3. Create the first Response record for the interview
+    // ── Persist first response placeholder ─────────────────────────────────
     const firstResponse = await Response.create({
       interviewId: newInterview._id,
-      question: firstQuestion,
+      question: welcomeMessage,
       answer: "",
-      score: 0,
-      technicalAccuracy: 0,
-      communication: 0,
-      confidence: 0,
-      fluency: 0,
-      grammarScore: 0,
-      clarityScore: 0,
-      problemSolvingScore: 0,
-      hiringRecommendation: "Weak Hire",
-      round: "Technical Round",
-      duration: 0,
-      speakingSpeed: 0,
-      hesitationCount: 0,
-      strengths: [],
-      weaknesses: [],
-      suggestions: [],
-      missingConcepts: [],
-      expectedAnswer: "",
-      improvedAnswer: ""
+      score: 0, technicalAccuracy: 0, communication: 0,
+      confidence: 0, fluency: 0, grammarScore: 0, clarityScore: 0,
+      problemSolvingScore: 0, hiringRecommendation: "Weak Hire",
+      round: curatedQuestions[0]?.roundName || curatedQuestions[0]?.round || "Technical Round",
+      duration: 0, speakingSpeed: 0, hesitationCount: 0,
+      strengths: [], weaknesses: [], suggestions: [], missingConcepts: [],
+      expectedAnswer: "", improvedAnswer: "",
     });
+
+    console.log(`[Orchestrator] Session created: ${newInterview._id}. Pipeline: Search ✓ Curator ✓ Interview ✓`);
 
     return NextResponse.json({
       interview: newInterview,
-      firstQuestion,
-      responseId: firstResponse._id
+      firstQuestion: welcomeMessage,
+      responseId: firstResponse._id,
+      questionSources,
+      curatedCount: curatedQuestions.length,
+      workflowPlan,
+      ragCount,
+      models: { curator: "gemini-2.5-pro", interview: "gemini-2.5-pro", evaluator: "gemini-2.5-pro", followup: "gemini-2.5-flash", embeddings: "text-embedding-004" },
+      agentPipeline: "Orchestrator → [Search(gemini-2.5-pro) + RAG(text-embedding-004)] → Curator(gemini-2.5-pro) → Interview(gemini-2.5-pro)",
     }, { status: 201 });
-    
+
   } catch (error: any) {
-    console.error("Failed to create interview session:", error);
+    console.error("[/api/interviews POST]", error);
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }

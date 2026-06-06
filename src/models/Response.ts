@@ -49,6 +49,18 @@ const ResponseSchema = new Schema(
       type: Number,
       default: 0,
     },
+    answerRelevance: {
+      type: Number,
+      default: 0,
+    },
+    eyeContactScore: {
+      type: Number,
+      default: 0,
+    },
+    engagementScore: {
+      type: Number,
+      default: 0,
+    },
     // Hiring verdict and round info
     hiringRecommendation: {
       type: String,
@@ -86,6 +98,14 @@ const ResponseSchema = new Schema(
       default: [],
     },
     missingConcepts: {
+      type: [String],
+      default: [],
+    },
+    expectedKeywords: {
+      type: [String],
+      default: [],
+    },
+    coveredKeywords: {
       type: [String],
       default: [],
     },

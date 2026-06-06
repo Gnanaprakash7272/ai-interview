@@ -37,6 +37,15 @@ export interface FeedbackResult {
   missingConcepts: string[];
   improvedAnswer: string;
   nextQuestion?: string;
+  
+  // Relevance and Keyword match
+  answerRelevance: number;
+  expectedKeywords: string[];
+  coveredKeywords: string[];
+  
+  // MediaPipe Behavioural Metrics
+  eyeContactScore?: number;
+  engagementScore?: number;
 }
 
 export interface CareerGuidanceResult {
@@ -74,13 +83,29 @@ export async function generateNextConversationalQuestion(
   if (companyInfo && companyKey !== "general") {
     companyPrompt = `Target Company: ${companyInfo.name}
        Interview Style & Technical Focus for this Company: ${companyInfo.focus}
-       MANDATORY INSTRUCTION: You MUST prioritize asking these exact questions or highly related variants that test the same concepts:
+       
+       MANDATORY COMPANY-SPECIFIC RECRUITER GUIDELINES:
+       You MUST conduct the interview exactly like a real senior technical interviewer from ${companyInfo.name}. Each target company has a highly distinct technical bar and interview profile:
+       1. "Zoho": Focus strictly on core programming logic, dry-running loops/nested conditions, custom string manipulations, recursive puzzles, and L2 Low-Level Design (LLD) scenarios (like Call Taxi Booking system, Railway Reservation system, or Snake & Ladder game logic). Avoid theoretical cloud-scaling jargon.
+       2. "Google": Focus heavily on complex Data Structures and Algorithms (DSA) (such as Graphs, Trees, Dynamic Programming, Segment Trees, Backtracking, and Binary Search) and high-scale system design. Bar for code optimization, time complexity (Big-O), and edge cases is extremely high.
+       3. "Amazon": Integrate Amazon's Leadership Principles (like Customer Obsession, Ownership, Bias for Action) into situational questions. Technical focus is on resilient microservice design, AWS cloud integrations, and robust data structures.
+       4. "Stripe" or "Paypal": Focus on API design, idempotency key implementations, race conditions in double-spending, database transactions/locks, and high security.
+       5. "Netflix": Focus on CDN caching, content replication, fault-tolerant microservice architectures, chaos engineering principles, and high-throughput streaming pipelines.
+       6. "Cisco" or "Qualcomm": Focus on low-level OS internals, TCP/IP networking sockets, RTOS scheduling, low-level C pointers, buffer overflows, and memory alignments.
+       7. "Meta" or "Apple": Focus on front-end complexity (DOM tree parsing, infinite scrolling, React rendering lifecycle) or product UI/UX hardware performance tradeoffs.
+       8. Other Companies:
+          - Service-Based (TCS, Infosys, Wipro, Cognizant, Accenture, Deloitte): Focus on OOPs principles, basic database schema normalize/SQL joins, and core Java/Python syntax.
+          - Product Startup (Flipkart, Swiggy, Zomato): Focus on hyperlocal matching, geohashing/quadtrees, search indexing, and real-time geospatial location tracking.
+       
+       MANDATORY SAMPLE QUESTIONS TO ADAPT OR USE:
+       Prioritize asking these exact sample questions or highly related variants that test the same underlying data structures/systems logic:
        ${companyInfo.sampleQuestions.map((q: string) => `- ${q}`).join("\n")}
-       You must align the interview style, technical rigor, and question choices to strictly match ${companyInfo.name}'s actual recruitment standards.`;
+       
+       Adjust your tone, technical expectations, and questions to strictly match ${companyInfo.name}'s actual recruitment standards.`;
   } else if (targetCompany && companyKey !== "general") {
     const companyDisplayName = targetCompany.charAt(0).toUpperCase() + targetCompany.slice(1);
     companyPrompt = `Target Company: ${companyDisplayName}
-       Since the target company is ${companyDisplayName}, you must align the interview style, typical technical rigor, focus areas, and coding standards to match ${companyDisplayName}'s real-world recruitment process. If they are known for specific topics (e.g., networking for Cisco, finance/scale for banking, enterprise Java/consulting for IT service firms, DSA/scalable systems for big tech), adapt your questions accordingly.`;
+       Since the target company is ${companyDisplayName}, you must align the interview style, technical focus, and questions to match ${companyDisplayName}'s real recruitment standards. Focus on their domain (e.g., networking for Cisco, scale/databases for Oracle/SAP, parallel GPU computing for NVIDIA/Intel, e-commerce supply chains for Walmart).`;
   }
 
   // Build candidate context for personalization
@@ -150,7 +175,19 @@ Language: ${language} (respond strictly in the selected language. If it is 'ta' 
 
 ${companyPrompt}
 
+${companyKey !== "general" ? `MANDATORY LIVE WEB SEARCH GROUNDING:
+- You MUST use the Google Search tool to search for real, recent interview experiences, rounds, and questions asked at ${companyInfo?.name || targetCompany} for the '${jobRole.replace(/_/g, " ")}' role (specifically on platforms like GeeksforGeeks, Glassdoor, LeetCode, InterviewBit, AmbitionBox).
+- Scrape these search results to extract actual coding challenges, system design topics, or behavioral questions asked at this company.
+- You must base your first interview question directly on these real, scraped questions rather than making up generic ones. Ensure the question matches the current stage/round.` : ""}
+
 ${roundInstructions}
+
+CRITICAL DATA STRUCTURES & CODING INSTRUCTIONS:
+- If the interview focus is "technical" or "mixed", you MUST ask real, realistic data structures (DS) and algorithmic coding problems.
+- Do NOT ask generic, abstract questions like "Explain what an array is." or "What is polymorphism?".
+- Instead, ask concrete, specific coding challenges (e.g., "Given an array of integers containing duplicates, how would you find the first duplicate element in O(N) time using a HashSet? Walk me through your logic.") or algorithmic design questions (e.g., "How would you implement a custom Queue using two Stacks? Detail the push and pop operation complexities.").
+- Format the coding problems with clear requirements, inputs, constraints, and ask the candidate to explain their choice of data structures, dry-run, or pseudo-code approach out loud.
+- For Zoho target company, prioritize asking practical array dry runs, custom string operations, recursion exercises, or L2 system design scenarios (like taxi allocation logic, employee hierarchy tree traversal).
 
 ${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
 ${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
@@ -183,7 +220,19 @@ Language: ${language} (respond strictly in the selected language. If it is 'ta' 
 
 ${companyPrompt}
 
+${companyKey !== "general" ? `MANDATORY LIVE WEB SEARCH GROUNDING:
+- You MUST use the Google Search tool to search for real, recent interview experiences, rounds, and questions asked at ${companyInfo?.name || targetCompany} for the '${jobRole.replace(/_/g, " ")}' role (specifically on platforms like GeeksforGeeks, Glassdoor, LeetCode, InterviewBit, AmbitionBox).
+- Scrape these search results to extract actual coding challenges, system design topics, or behavioral questions asked at this company.
+- Base the next question directly on these real-world scraped questions matching the current round, continuing the conversational flow.` : ""}
+
 ${roundInstructions}
+
+CRITICAL DATA STRUCTURES & CODING INSTRUCTIONS:
+- If the interview focus is "technical" or "mixed", you MUST ask real, realistic data structures (DS) and algorithmic coding problems.
+- Do NOT ask generic, abstract questions like "Explain what an array is." or "What is polymorphism?".
+- Instead, ask concrete, specific coding challenges (e.g., "Given an array of integers containing duplicates, how would you find the first duplicate element in O(N) time using a HashSet? Walk me through your logic.") or algorithmic design questions (e.g., "How would you implement a custom Queue using two Stacks? Detail the push and pop operation complexities.").
+- Format the coding problems with clear requirements, inputs, constraints, and ask the candidate to explain their choice of data structures, dry-run, or pseudo-code approach out loud.
+- For Zoho target company, prioritize asking practical array dry runs, custom string operations, recursion exercises, or L2 system design scenarios (like taxi allocation logic, employee hierarchy tree traversal).
 
 ${resumeText ? `Candidate's Resume:\n${resumeText}\n` : ""}
 ${jobDescriptionText ? `Target Job Description:\n${jobDescriptionText}\n` : ""}
@@ -203,9 +252,15 @@ Output ONLY the final spoken recruiter message.
 Do NOT include any JSON, Markdown tags, labels (like "Interviewer:"), or internal reasoning in the final output.`;
       }
 
+      const configObj: any = {};
+      if (companyKey !== "general") {
+        configObj.tools = [{ googleSearch: {} }];
+      }
+
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: prompt
+        contents: prompt,
+        config: configObj
       });
 
       if (response && response.text) {
@@ -252,7 +307,13 @@ export async function evaluateAnswer(
   skills?: string[],
   history?: { question: string; answer: string }[],
   isLastQuestion?: boolean,
-  targetCompany?: string
+  targetCompany?: string,
+  mediaPipeMetrics?: {
+    eyeContactScore: number;
+    headStabilityScore: number;
+    faceVisibilityScore: number;
+    engagementScore: number;
+  }
 ): Promise<FeedbackResult> {
   const wordCount = answer ? answer.trim().split(/\s+/).length : 0;
   if (!answer || wordCount < 5) {
@@ -265,6 +326,7 @@ export async function evaluateAnswer(
       grammarScore: 1,
       clarityScore: 1,
       problemSolvingScore: 0,
+      answerRelevance: 0,
       hiringRecommendation: "Reject",
       round: "Technical Round",
       expectedAnswer: "A complete answer should define the core concept, outline its implementation, explain trade-offs, and provide a real-world use case.",
@@ -272,6 +334,8 @@ export async function evaluateAnswer(
       weaknesses: ["Answer is extremely brief or silent.", "No descriptive technical details provided."],
       suggestions: ["Speak clearly and in full sentences.", "Structure your answer: define → explain → example → trade-offs."],
       missingConcepts: ["Core definition", "Practical use-cases", "Underlying mechanics"],
+      expectedKeywords: ["Definition", "Implementation", "Example", "Trade-offs"],
+      coveredKeywords: [],
       improvedAnswer: "Please speak clearly into the microphone and provide a detailed, technical response.",
       nextQuestion: isLastQuestion ? undefined : "Can you elaborate on your previous experience?"
     };
@@ -297,42 +361,78 @@ ${historyText}
 
 Current Question Asked: ${question}
 Candidate's Answer: ${answer}
-Answer Duration: ${duration} seconds
-Speaking Speed: ${speakingSpeed.toFixed(1)} words per minute
-Hesitation Count: ${hesitationCount} (filler words like "umm", "aaa", "like", "I don't know")
+Voice Analytics:
+* Speaking Speed: ${speakingSpeed.toFixed(1)} WPM
+* Response Duration: ${duration} seconds
+* Hesitations: ${hesitationCount} (filler words)
+
+MediaPipe Metrics (if available):
+* Eye Contact Score: ${mediaPipeMetrics?.eyeContactScore ?? "N/A"}
+* Head Stability Score: ${mediaPipeMetrics?.headStabilityScore ?? "N/A"}
+* Face Visibility Score: ${mediaPipeMetrics?.faceVisibilityScore ?? "N/A"}
+* Engagement Score: ${mediaPipeMetrics?.engagementScore ?? "N/A"}
 
 Evaluation Criteria:
-1. Technical Accuracy (0-100): Correctness of concepts, depth, and relevance to the question and role.
-2. Communication Skills (0-100): Clarity, grammar, vocabulary, and sentence structure.
-3. Confidence (0-100): Steadiness, hesitation filler count, delivery confidence.
-4. Fluency (0-100): Flow of explanation, smoothness, transitions between ideas.
-5. Grammar Score (0-10): Grammatical correctness, sentence structure quality.
-6. Clarity Score (0-10): How clearly the candidate communicated their answer.
-7. Problem Solving Score (0-10): Analytical thinking, approach structure, and solution quality.
+Evaluate both technical performance and behavioural performance.
 
-CRITICAL RULES:
+Technical Evaluation:
+1. Technical Accuracy (0-100)
+2. Problem Solving Ability (0-10)
+3. Communication Quality (0-100)
+4. Grammar Quality (0-10)
+5. Clarity of Explanation (0-10)
+6. Answer Relevance (0-10): How relevant the answer is to the question asked. 0 means completely off-topic or hallucinated.
+
+Behaviour Evaluation:
+7. Confidence Level (0-100)
+8. Fluency (0-100)
+9. Eye Contact Quality (0-10)
+10. Interview Engagement (0-10)
+
+CRITICAL RULES FOR HALLUCINATION & RELEVANCE:
+- Do NOT give high scores for irrelevant answers.
+- If the answer does not address the question (e.g., "Anaconda Anaconda" for HashMap), contains random/repeated words, or does not attempt to answer:
+  - You MUST set Technical Accuracy to 0-2 (out of 100).
+  - You MUST set Answer Relevance to 0-2 (out of 10).
+  - You MUST set Problem Solving Score, Grammar Score, and Clarity Score to 0-2.
+  - Do NOT reward fluency or confidence for irrelevant answers. They should also be strictly penalized.
+  - Set hiringRecommendation to "Reject".
+  - Include "Off-topic response" or "No relevant concepts" in weaknesses.
+
+CRITICAL RULES FOR KEYWORD MATCHING:
+- Identify 4-6 'expectedKeywords' that a perfect answer should include.
+- Identify which of those expected keywords were actually mentioned/covered by the candidate in 'coveredKeywords'.
+
+BEHAVIOURAL RULES:
+- Eye contact alone should not increase hiring recommendations.
+- Technical knowledge remains the primary factor.
+- Behavioural metrics should be used as supporting signals only.
+
+OTHER CRITICAL RULES:
 - MATHEMATICAL CONSISTENCY: The overall 'score' (0-100) MUST be a logical, weighted average of the sub-scores (Technical Accuracy, Communication, Confidence, Fluency).
-- If the candidate's answer is irrelevant, gibberish, very short, or simply asks to "repeat the question", you MUST score Technical Accuracy as 0, Problem Solving as 0, and note this in weaknesses.
 - The expectedAnswer MUST be SPECIFIC and highly technical for the EXACT question asked.
 - The improvedAnswer MUST be a VERY SHORT and CONCISE correction (maximum 2-3 sentences).
-- If isLastQuestion is false, you MUST generate the 'nextQuestion'. The next question should logically follow the evaluation (e.g., if they failed to explain a concept, ask a follow-up; if they passed, move to a harder or different concept). 
+- If isLastQuestion is false, you MUST generate the 'nextQuestion'. The next question should logically follow the evaluation.
 - If isLastQuestion is true, 'nextQuestion' should be null.
 - isLastQuestion = ${isLastQuestion ? "true" : "false"}
 
 Provide:
 - strengths: at least 2 specific positive points (if they failed completely, put "None")
-- weaknesses: at least 2 specific areas to improve
+- weaknesses: at least 2 specific areas to improve (previously areasForImprovement)
 - suggestions: at least 2 actionable improvement tips
 - missingConcepts: specific technical keywords they failed to mention
+- expectedKeywords: 4-6 critical concepts/keywords expected for the question
+- coveredKeywords: subset of expectedKeywords that the candidate successfully covered
 - expectedAnswer: SPECIFIC technical answer to the exact question (2-4 sentences, written as expert reference)
 - improvedAnswer: CRITICAL: Provide a VERY SHORT and CONCISE correction or improvement (maximum 2-3 sentences).
 - nextQuestion: The spoken text of the next question to ask the candidate (or null if isLastQuestion is true). Ensure it is in ${language}.
 
-Also determine hiringRecommendation based on overall performance:
-- "Strong Hire": Score >= 85
-- "Hire": Score >= 70
-- "Weak Hire": Score >= 55
-- "Reject": Score < 55, significant gaps in knowledge or communication
+Determine hiringRecommendation STRICTLY based on these rules:
+- Technical Accuracy < 40 (out of 100) -> "Reject"
+- Answer Relevance < 4 (out of 10) -> "Reject"
+- Grammar Score < 3 (out of 10) -> "Weak Hire" (unless rejected by above rules)
+- Overall Score > 80 -> "Hire" or "Strong Hire"
+- Otherwise, use your best judgment.
 
 Return a single JSON object with this exact shape:
 {
@@ -344,14 +444,20 @@ Return a single JSON object with this exact shape:
   "grammarScore": number (0 to 10),
   "clarityScore": number (0 to 10),
   "problemSolvingScore": number (0 to 10),
+  "answerRelevance": number (0 to 10),
+  "eyeContactScore": number (0 to 10),
+  "engagementScore": number (0 to 10),
   "hiringRecommendation": "Strong Hire" | "Hire" | "Weak Hire" | "Reject",
   "round": string,
   "expectedAnswer": string,
-  "strengths": string[] (at least 2 specific points),
-  "weaknesses": string[] (at least 2 specific points),
-  "suggestions": string[] (at least 2 actionable tips),
-  "missingConcepts": string[] (concepts they missed),
-  "improvedAnswer": string (improved answer in first person developer tone in ${language})
+  "strengths": string[],
+  "weaknesses": string[],
+  "suggestions": string[],
+  "missingConcepts": string[],
+  "expectedKeywords": string[],
+  "coveredKeywords": string[],
+  "improvedAnswer": string,
+  "nextQuestion": string | null
 }
 
 Return ONLY the raw JSON string. Do not wrap in markdown tags or code blocks.`;
@@ -381,6 +487,9 @@ Return ONLY the raw JSON string. Do not wrap in markdown tags or code blocks.`;
             grammarScore: feedback.grammarScore ?? 5,
             clarityScore: feedback.clarityScore ?? 5,
             problemSolvingScore: feedback.problemSolvingScore ?? 5,
+            answerRelevance: feedback.answerRelevance ?? 5,
+            eyeContactScore: feedback.eyeContactScore ?? 0,
+            engagementScore: feedback.engagementScore ?? 0,
             hiringRecommendation: feedback.hiringRecommendation ?? "Weak Hire",
             round: feedback.round ?? "Technical Round",
             expectedAnswer: feedback.expectedAnswer ?? "",
@@ -388,6 +497,8 @@ Return ONLY the raw JSON string. Do not wrap in markdown tags or code blocks.`;
             weaknesses: feedback.weaknesses ?? [],
             suggestions: feedback.suggestions ?? [],
             missingConcepts: feedback.missingConcepts ?? [],
+            expectedKeywords: feedback.expectedKeywords ?? [],
+            coveredKeywords: feedback.coveredKeywords ?? [],
             improvedAnswer: feedback.improvedAnswer ?? "",
             nextQuestion: feedback.nextQuestion,
           } as FeedbackResult;
@@ -399,7 +510,6 @@ Return ONLY the raw JSON string. Do not wrap in markdown tags or code blocks.`;
   }
 
   // Fallback heuristic engine
-  const wordCount = answer.split(/\s+/).length;
   let techScore = Math.min(45 + (wordCount > 20 ? 20 : 0) + (wordCount > 50 ? 20 : 0), 90);
   let commScore = Math.min(50 + (hesitationCount < 3 ? 20 : 5) + (speakingSpeed > 100 && speakingSpeed < 160 ? 20 : 5), 92);
   let confScore = Math.max(100 - (hesitationCount * 12), 40);
@@ -423,6 +533,7 @@ Return ONLY the raw JSON string. Do not wrap in markdown tags or code blocks.`;
     grammarScore: gramScore,
     clarityScore: clarScore,
     problemSolvingScore: psScore,
+    answerRelevance: Math.min(Math.round((techScore + commScore) / 20), 10),
     hiringRecommendation: hiringRec,
     round: "Technical Round",
     expectedAnswer: "A strong answer should define the concept clearly, explain its implementation, provide a real-world example, and discuss trade-offs or limitations.",
@@ -439,6 +550,8 @@ Return ONLY the raw JSON string. Do not wrap in markdown tags or code blocks.`;
       "Practice mock answers out loud to improve fluency and reduce filler words."
     ],
     missingConcepts: ["System trade-offs", "Production scalability constraints", "Real-world examples"],
+    expectedKeywords: ["Definition", "Implementation", "Real-world example", "Trade-offs"],
+    coveredKeywords: ["Definition"],
     improvedAnswer: "To improve, explain the concept clearly, detail why you used it, mention performance implications, and outline design choices in a professional tone."
   };
 }

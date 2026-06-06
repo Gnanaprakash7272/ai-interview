@@ -164,8 +164,77 @@
     "focus": "Core Java, DBMS/SQL Queries, SDLC models (Agile vs Waterfall), OOPs concepts, and software testing.",
     "sampleQuestions": [
       "What is polymorphism in Object-Oriented Programming, and what is the difference between overloading and overriding?",
-      "How would you write a query to find the second highest salary from an Employee table?",
-      "Explain the difference between Agile and Waterfall development life cycles."
+      "Write a SQL query to find the second highest salary from an Employee table or find duplicate records without using DISTINCT.",
+      "Explain the difference between Agile and Waterfall development life cycles.",
+      "Write a database connection code and retrieval logic, and show how you would write a nested query for linked tables.",
+      "How would you explain Quick Sort? Perform a dry run on paper and explain the pivot selection tradeoffs.",
+      "Solve the puzzle: A monkey climbs 3 feet and slips 2 feet in a second. How long will it take to climb a 20-foot wall?"
+    ],
+    "rounds": [
+      {
+        "name": "Written Round",
+        "description": "A 90-minute online test consisting of four sections: Quantitative Aptitude (20 Qs / 40 mins with 1/3 negative marking), Programming MCQs (10-12 Qs / 20 mins), Coding (1-2 coding problems / 20 mins), and Email Writing (10 mins)."
+      },
+      {
+        "name": "Technical Interview (TR)",
+        "description": "Face-to-face round testing OOPs, DBMS/SQL (normalization, joins, nested queries), Data Structures (sorting algorithms, linked list manipulation), Networking (OSI model layers), OS concepts (deadlocks, thread safety), and your final year project. Expect confidence and stress checks."
+      },
+      {
+        "name": "Managerial Interview (MR)",
+        "description": "Focuses on your project objective and design, software engineering methodologies, stress management techniques, adaptability, hobbies, and behavioral situations."
+      },
+      {
+        "name": "HR Round",
+        "description": "Final check of communication skills, relocation flexibility, awareness of TCS values, weakness checks, and logical/aptitude puzzles."
+      }
+    ],
+    "syllabus": {
+      "aptitude": [
+        "Number System & Progressions",
+        "Time, Work & Wages",
+        "Time, Speed & Distance",
+        "Probability & Permutations/Combinations",
+        "Ratio, Proportion & Percentages",
+        "Truth & Lie, Seating Arrangement Puzzles"
+      ],
+      "c_aptitude": [
+        "Storage Classes (auto, static, extern, register)",
+        "Pass by Value vs Reference",
+        "OOP Principles & Inheritance Types",
+        "Binary Search Trees & DFS/BFS Implementation",
+        "DBMS Normalization (1NF, 2NF, 3NF) & SQL Queries",
+        "E-mail Writing Rules & Keyword Syncing"
+      ]
+    },
+    "prepTips": [
+      "Listen carefully during the pre-placement talk (PPT) and write down key company stats or achievements, as these are often asked in subsequent rounds.",
+      "For Email Writing, you must use all of the provided phrases without modifying their form. Write between 70 and 80 words and avoid spelling errors.",
+      "Brush up on sorting algorithms (Quick, Bubble, Selection, Insertion) and practice dry running them step-by-step on paper.",
+      "Remain highly confident even when you do not know the answer. Stating 'I do not know, sir' confidently is much better than giving false answers.",
+      "Prepare your final year project details inside out. Be ready to explain the database tables, API logic, and choices of technologies.",
+      "Practice solving simple puzzles like the monkey climbing tower, and keep a pleasant demeanor during stressful questions."
+    ],
+    "faqs": [
+      {
+        "q": "What is the eligibility criteria for the TCS recruitment drive?",
+        "a": "Above 60% in 10th, 12th, and graduation (CGPA > 6). Maximum of 2 years education gap and maximum 1 active backlog during the interview process (must be cleared by joining)."
+      },
+      {
+        "q": "How is the Written Round structured?",
+        "a": "It is a 90-minute online test consisting of Quantitative Aptitude (20 questions / 40 mins with 1/3 negative marking), Programming Language MCQs (10-12 questions / 20 mins), Coding (1-2 problems / 20 mins), and Email Writing (10 mins)."
+      },
+      {
+        "q": "What is the key rule for TCS Email Writing?",
+        "a": "You must use all the provided clues/phrases in the exact same format without modifying them. Try to write between 70 to 80 words and avoid spelling/grammar mistakes."
+      },
+      {
+        "q": "Why does TCS conduct stress testing in interviews?",
+        "a": "Interviewers might challenge your identity, resume details, or statements (e.g., claiming you look overconfident or don't match your photo) to check how you handle stress. Stay calm, smile, and answer confidently."
+      },
+      {
+        "q": "What kind of puzzles are asked in the HR/MR rounds?",
+        "a": "Basic mathematical and logical puzzles are common. For example, 'A monkey climbs 3 feet in a second and slips down 2 feet. When does it reach the top of a 20 feet tower?' (Answer: 18 seconds, because on the 18th second it reaches the top and doesn't slip)."
+      }
     ]
   },
   "infosys": {
@@ -255,7 +324,84 @@
     "sampleQuestions": [
       "Design a Call Taxi Booking System with linear points A-F, booking allocation based on nearest free taxi.",
       "Write a logic in Java/C to print a 2D matrix in spiral or zig-zag fashion.",
-      "How would you solve the MS-Paint Flood Fill algorithm to replace the color of a given pixel?"
+      "How would you solve the MS-Paint Flood Fill algorithm to replace the color of a given pixel?",
+      "Design a Railway reservation system with waiting lists, RAC, and confirmed tickets.",
+      "Design an Employee management system that handles hierarchy and operations.",
+      "Design a Snake and Ladder game for multiple players."
+    ],
+    "rounds": [
+      {
+        "name": "Written Test",
+        "description": "A 90-minute online or written test containing 20 to 40 questions covering General Aptitude (Time & Work, Profit & Loss, Speed & Distance, etc.) and C Programming Aptitude (Nested loops, recursion, flowcharts, pointers)."
+      },
+      {
+        "name": "Basic Programming",
+        "description": "A face-to-face or proctored screen-share coding round. You are tested on dry runs, loops, recursion, and basic data structures in languages like C, C++, or Java."
+      },
+      {
+        "name": "Advanced Programming",
+        "description": "A 90-minute complex programming test focusing on advanced data structures, algorithms, and real-time problem-solving skills, usually revolving around one core problem."
+      },
+      {
+        "name": "Design Round",
+        "description": "A low-level (LLD) or high-level (HLD) design round. Candidates are asked to design fully functional systems such as a Call Taxi Booking System, Railway Reservation, or Snakes & Ladders."
+      },
+      {
+        "name": "Technical HR",
+        "description": "An interactive round discussing data structures, database concepts (joins, normalizations), and scenario-based technical questions or logical puzzles."
+      },
+      {
+        "name": "General HR",
+        "description": "A friendly behavioral interview focusing on your family background, hobbies, location preferences, and why you want to join Zoho."
+      }
+    ],
+    "syllabus": {
+      "aptitude": [
+        "Time and Work",
+        "Profit and Loss",
+        "Speed and Distance",
+        "Percentage",
+        "Ratios and Proportions",
+        "Average"
+      ],
+      "c_aptitude": [
+        "Nested Loops",
+        "Recursion",
+        "Flowcharts",
+        "Pointers"
+      ]
+    },
+    "prepTips": [
+      "Focus heavily on the core fundamentals of loops, recursion, and pointers. You do not need to memorize complex algorithms, but you must know how to solve basic problems logically.",
+      "When responding to behavioral questions, use the STAR (Situation, Task, Action, Result) method to structure your answers.",
+      "Write clean, readable code and explain your thought process out loud during the basic and advanced programming rounds.",
+      "Be interactive. Keep the conversation going with the interviewer and discuss your approach before coding."
+    ],
+    "faqs": [
+      {
+        "q": "Is the Zoho interview difficult?",
+        "a": "No, the Zoho interview is not difficult. It focuses on a strong grasp of basic programming concepts, logical thinking, and problem-solving skills."
+      },
+      {
+        "q": "What is the eligibility criteria for Zoho?",
+        "a": "BE/B.Tech or related field. Students from any stream or department, even those with active backlogs, can apply."
+      },
+      {
+        "q": "Does Zoho have a dress code?",
+        "a": "There is no strict dress code at Zoho. You can wear what you are comfortable in."
+      },
+      {
+        "q": "What are the working hours at Zoho?",
+        "a": "Zoho offers flexible working hours, allowing employees to decide when they start and finish their workday."
+      },
+      {
+        "q": "What is the cool-off period for Zoho?",
+        "a": "Like most product-based companies, Zoho has a cool-off period of 6 months before you can re-apply."
+      },
+      {
+        "q": "Why join Zoho?",
+        "a": "Zoho offers great work culture, flexible working hours, 24/7 free food, free transport commute options, high hikes, Apple/MacBook gadgets, and a great learning environment."
+      }
     ]
   },
   "adobe": {

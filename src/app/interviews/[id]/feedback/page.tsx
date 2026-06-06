@@ -22,6 +22,9 @@ interface ResponseFeedback {
   grammarScore: number;
   clarityScore: number;
   problemSolvingScore: number;
+  answerRelevance: number;
+  expectedKeywords: string[];
+  coveredKeywords: string[];
   // Verdict fields
   hiringRecommendation: "Strong Hire" | "Hire" | "Weak Hire" | "Reject";
   round: string;
@@ -36,6 +39,8 @@ interface ResponseFeedback {
   suggestions: string[];
   missingConcepts: string[];
   improvedAnswer: string;
+  eyeContactScore?: number;
+  engagementScore?: number;
 }
 
 interface HiringBadgeConfig {
@@ -173,6 +178,9 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
   const avgGrammar = parseFloat((responses.reduce((sum, r) => sum + (r.grammarScore || 0), 0) / responses.length).toFixed(1)) || 0;
   const avgClarity = parseFloat((responses.reduce((sum, r) => sum + (r.clarityScore || 0), 0) / responses.length).toFixed(1)) || 0;
   const avgProblem = parseFloat((responses.reduce((sum, r) => sum + (r.problemSolvingScore || 0), 0) / responses.length).toFixed(1)) || 0;
+  const avgRelevance = parseFloat((responses.reduce((sum, r) => sum + (r.answerRelevance || 0), 0) / responses.length).toFixed(1)) || 0;
+  const avgEyeContact = parseFloat((responses.reduce((sum, r) => sum + (r.eyeContactScore || 0), 0) / responses.length).toFixed(1)) || 0;
+  const avgEngagement = parseFloat((responses.reduce((sum, r) => sum + (r.engagementScore || 0), 0) / responses.length).toFixed(1)) || 0;
 
   // Voice metrics
   const avgDuration = Math.round(responses.reduce((sum, r) => sum + (r.duration || 0), 0) / responses.length) || 0;
@@ -318,7 +326,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
             <div className="breakdown-item">
               <div className="breakdown-item-labels">
                 <span className="dimension-name">Technical Accuracy</span>
-                <span className="dimension-score">{avgTech}%</span>
+                <span className="dimension-score">{(avgTech / 10).toFixed(1)}/10</span>
               </div>
               <div className="progress-bar-track">
                 <div className="progress-bar-fill tech-fill" style={{ width: `${avgTech}%` }}></div>
@@ -328,7 +336,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
             <div className="breakdown-item">
               <div className="breakdown-item-labels">
                 <span className="dimension-name">Communication</span>
-                <span className="dimension-score">{avgComm}%</span>
+                <span className="dimension-score">{(avgComm / 10).toFixed(1)}/10</span>
               </div>
               <div className="progress-bar-track">
                 <div className="progress-bar-fill comm-fill" style={{ width: `${avgComm}%` }}></div>
@@ -338,7 +346,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
             <div className="breakdown-item">
               <div className="breakdown-item-labels">
                 <span className="dimension-name">Confidence</span>
-                <span className="dimension-score">{avgConf}%</span>
+                <span className="dimension-score">{(avgConf / 10).toFixed(1)}/10</span>
               </div>
               <div className="progress-bar-track">
                 <div className="progress-bar-fill conf-fill" style={{ width: `${avgConf}%` }}></div>
@@ -348,7 +356,7 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
             <div className="breakdown-item">
               <div className="breakdown-item-labels">
                 <span className="dimension-name">Fluency</span>
-                <span className="dimension-score">{avgFlue}%</span>
+                <span className="dimension-score">{(avgFlue / 10).toFixed(1)}/10</span>
               </div>
               <div className="progress-bar-track">
                 <div className="progress-bar-fill flue-fill" style={{ width: `${avgFlue}%` }}></div>
@@ -362,7 +370,21 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
       <section className="sub-scores-panel glass-card">
         <h3>Granular Interview Scores <span className="sub-score-scale">(out of 10)</span></h3>
         <p className="sub-desc">Detailed dimension scoring computed per answer by the AI evaluator</p>
-        <div className="sub-score-trio">
+        <div className="sub-score-quad">
+          <div className="sub-score-item">
+            <div className="sub-score-circle" style={{ "--pct": `${(avgRelevance / 10) * 100}%` } as any}>
+              <span className="sub-score-val">{avgRelevance}</span>
+              <span className="sub-score-unit">/10</span>
+            </div>
+            <p>Answer Relevance</p>
+          </div>
+          <div className="sub-score-item">
+            <div className="sub-score-circle" style={{ "--pct": `${(avgProblem / 10) * 100}%` } as any}>
+              <span className="sub-score-val">{avgProblem}</span>
+              <span className="sub-score-unit">/10</span>
+            </div>
+            <p>Problem Solving</p>
+          </div>
           <div className="sub-score-item">
             <div className="sub-score-circle" style={{ "--pct": `${(avgGrammar / 10) * 100}%` } as any}>
               <span className="sub-score-val">{avgGrammar}</span>
@@ -378,11 +400,18 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
             <p>Clarity Score</p>
           </div>
           <div className="sub-score-item">
-            <div className="sub-score-circle" style={{ "--pct": `${(avgProblem / 10) * 100}%` } as any}>
-              <span className="sub-score-val">{avgProblem}</span>
+            <div className="sub-score-circle" style={{ "--pct": `${(avgEyeContact / 10) * 100}%` } as any}>
+              <span className="sub-score-val">{avgEyeContact}</span>
               <span className="sub-score-unit">/10</span>
             </div>
-            <p>Problem Solving</p>
+            <p>Eye Contact</p>
+          </div>
+          <div className="sub-score-item">
+            <div className="sub-score-circle" style={{ "--pct": `${(avgEngagement / 10) * 100}%` } as any}>
+              <span className="sub-score-val">{avgEngagement}</span>
+              <span className="sub-score-unit">/10</span>
+            </div>
+            <p>Engagement</p>
           </div>
         </div>
       </section>
@@ -468,23 +497,38 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
                       <span>Hesitations: <strong>{resDoc.hesitationCount}</strong></span>
                     </div>
 
+                    {/* Hallucination / Off-topic Banner */}
+                    {resDoc.answerRelevance !== undefined && resDoc.answerRelevance < 4 && (
+                      <div className="hallucination-banner">
+                        <AlertTriangle size={18} className="danger-color" />
+                        <div>
+                          <strong>⚠️ Answer does not address the question.</strong>
+                          <p>Detected as off-topic or lacking relevant concepts. Please answer the question directly.</p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Sub Scores Row (0-100 + 0-10) */}
                     <div className="sub-scores-row">
                       <div className="sub-score-badge">
+                        <span>Relevance:</span>
+                        <strong className="warning-color">{resDoc.answerRelevance || 0}/10</strong>
+                      </div>
+                      <div className="sub-score-badge">
                         <span>Technical:</span>
-                        <strong className="primary-color">{resDoc.technicalAccuracy}%</strong>
+                        <strong className="primary-color">{(resDoc.technicalAccuracy / 10).toFixed(1)}/10</strong>
                       </div>
                       <div className="sub-score-badge">
                         <span>Communication:</span>
-                        <strong className="info-color">{resDoc.communication}%</strong>
+                        <strong className="info-color">{(resDoc.communication / 10).toFixed(1)}/10</strong>
                       </div>
                       <div className="sub-score-badge">
                         <span>Confidence:</span>
-                        <strong className="warning-color">{resDoc.confidence || 0}%</strong>
+                        <strong className="warning-color">{((resDoc.confidence || 0) / 10).toFixed(1)}/10</strong>
                       </div>
                       <div className="sub-score-badge">
                         <span>Fluency:</span>
-                        <strong className="success-color">{resDoc.fluency || 0}%</strong>
+                        <strong className="success-color">{((resDoc.fluency || 0) / 10).toFixed(1)}/10</strong>
                       </div>
                       <div className="sub-score-badge">
                         <span>Grammar:</span>
@@ -584,6 +628,30 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
                         </ul>
                       </div>
                     </div>
+
+                    {/* Keyword Coverage */}
+                    {resDoc.expectedKeywords && resDoc.expectedKeywords.length > 0 && (
+                      <div className="keyword-coverage-panel glass-card">
+                        <div className="box-title">
+                          <CheckCircle size={14} className="success-color" />
+                          <h5>Keyword Coverage</h5>
+                          <span className="coverage-score-badge">
+                            {Math.round(((resDoc.coveredKeywords || []).length / resDoc.expectedKeywords.length) * 100)}% Coverage
+                          </span>
+                        </div>
+                        <div className="keywords-grid">
+                          {resDoc.expectedKeywords.map((kw, kIdx) => {
+                            const isCovered = (resDoc.coveredKeywords || []).some(c => c.toLowerCase() === kw.toLowerCase());
+                            return (
+                              <div key={kIdx} className={`keyword-item ${isCovered ? "covered" : "missed"}`}>
+                                {isCovered ? <CheckCircle size={14} className="success-color" /> : <AlertTriangle size={14} className="danger-color" />}
+                                <span>{kw}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Missing Concepts */}
                     {resDoc.missingConcepts && resDoc.missingConcepts.length > 0 && (
@@ -951,14 +1019,22 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           margin-bottom: 24px;
         }
 
-        .sub-score-trio {
+        .sub-score-quad {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(6, 1fr);
           gap: 24px;
         }
 
-        @media (max-width: 600px) {
-          .sub-score-trio { grid-template-columns: 1fr; }
+        @media (max-width: 1024px) {
+          .sub-score-quad { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+        }
+
+        @media (max-width: 800px) {
+          .sub-score-quad { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+          .sub-score-quad { grid-template-columns: 1fr; }
         }
 
         .sub-score-item {
@@ -1199,6 +1275,31 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
         .info-color { color: var(--color-info); }
         .success-color { color: var(--color-success); }
         .warning-color { color: var(--color-warning); }
+        .danger-color { color: var(--color-danger); }
+
+        .hallucination-banner {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          background: rgba(220, 38, 38, 0.1);
+          border: 1px solid rgba(220, 38, 38, 0.3);
+          border-radius: var(--radius-md);
+          padding: 14px 18px;
+          margin-bottom: 20px;
+        }
+        
+        .hallucination-banner strong {
+          color: var(--color-danger);
+          font-size: 14px;
+          display: block;
+          margin-bottom: 4px;
+        }
+        
+        .hallucination-banner p {
+          color: var(--text-muted);
+          font-size: 13px;
+          margin: 0;
+        }
 
         /* ─── 3-Column Answer Grid ─── */
         .audit-answers-grid-3 {
@@ -1369,11 +1470,13 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
             font-size: 14px;
             color: var(--text-muted);
           }
-          .ideal-reference strong { color: var(--text-main); }.missing-concepts-panel {
+          .ideal-reference strong { color: var(--text-main); }
+          .missing-concepts-panel {
           padding: 14px;
           border: 1px dashed var(--border);
           border-radius: var(--radius-md);
           background: rgba(14, 165, 233, 0.01);
+          margin-top: 16px;
         }
 
         .missing-concepts-panel .box-title { margin-bottom: 8px; }
@@ -1392,6 +1495,55 @@ export default function InterviewFeedback({ params }: { params: Promise<{ id: st
           border-radius: 9999px;
           font-size: 12px;
           font-weight: 500;
+        }
+
+        .keyword-coverage-panel {
+          padding: 18px;
+          margin-top: 16px;
+        }
+        
+        .keyword-coverage-panel .box-title {
+          justify-content: flex-start;
+        }
+        
+        .coverage-score-badge {
+          margin-left: auto;
+          background: var(--primary-glow-subtle);
+          color: var(--primary-hover);
+          padding: 4px 10px;
+          border-radius: 9999px;
+          font-size: 12px;
+          font-weight: 700;
+        }
+
+        .keywords-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .keyword-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          padding: 6px 12px;
+          border-radius: var(--radius-sm);
+          border: 1px solid var(--border);
+        }
+
+        .keyword-item.covered {
+          background: rgba(16, 185, 129, 0.05);
+          border-color: rgba(16, 185, 129, 0.2);
+          color: var(--text-main);
+        }
+
+        .keyword-item.missed {
+          background: rgba(220, 38, 38, 0.02);
+          color: var(--text-muted);
+          text-decoration: line-through;
+          opacity: 0.7;
         }
 
         /* Career advisor */

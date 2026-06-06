@@ -96,13 +96,17 @@ export async function POST(
       const feedback = await evaluateAnswer(
         responseDoc.question,
         ans.answer,
-        60, // default duration
-        130, // default speaking speed (WPM)
-        0, // default hesitation count
+        ans.duration || 60, // default duration
+        ans.speakingSpeed || 130, // default speaking speed (WPM)
+        ans.hesitationCount || 0, // default hesitation count
         interview.language || "en",
         interview.domain,
         interview.experienceLevel || interview.difficulty,
-        interview.skills || []
+        interview.skills || [],
+        undefined,
+        undefined,
+        undefined,
+        ans.mediaPipeMetrics
       );
 
       // Save all evaluation fields to response doc
@@ -118,11 +122,16 @@ export async function POST(
       responseDoc.hiringRecommendation = feedback.hiringRecommendation;
       responseDoc.round = feedback.round;
       responseDoc.expectedAnswer = feedback.expectedAnswer;
+      responseDoc.answerRelevance = feedback.answerRelevance;
+      responseDoc.expectedKeywords = feedback.expectedKeywords;
+      responseDoc.coveredKeywords = feedback.coveredKeywords;
       responseDoc.strengths = feedback.strengths;
       responseDoc.weaknesses = feedback.weaknesses;
       responseDoc.suggestions = feedback.suggestions || [];
       responseDoc.missingConcepts = feedback.missingConcepts;
       responseDoc.improvedAnswer = feedback.improvedAnswer;
+      responseDoc.eyeContactScore = feedback.eyeContactScore;
+      responseDoc.engagementScore = feedback.engagementScore;
       await responseDoc.save();
 
       totalScoreSum += feedback.score;

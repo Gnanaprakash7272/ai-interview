@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { LogOut, BarChart3, LayoutDashboard, User, Menu, X } from "lucide-react";
+import { LogOut, BarChart3, LayoutDashboard, User, Menu, X, Building2 } from "lucide-react";
 import LogoImage from "@/assets/logo.png";
 import { useState } from "react";
 
@@ -49,6 +49,13 @@ export default function Navbar() {
               >
                 <BarChart3 size={18} />
                 <span>Analytics</span>
+              </Link>
+              <Link 
+                href="/companies" 
+                className={`nav-item ${isActive("/companies") ? "active" : ""}`}
+              >
+                <Building2 size={18} />
+                <span>Companies</span>
               </Link>
               <div className="user-profile">
                 <User size={16} />
@@ -97,6 +104,14 @@ export default function Navbar() {
                 >
                   <BarChart3 size={18} />
                   <span>Analytics</span>
+                </Link>
+                <Link 
+                  href="/companies" 
+                  className={`mobile-nav-item ${isActive("/companies") ? "active" : ""}`}
+                  onClick={toggleMenu}
+                >
+                  <Building2 size={18} />
+                  <span>Companies</span>
                 </Link>
                 <div className="mobile-user-profile">
                   <User size={18} />
